@@ -1,0 +1,41 @@
+const {chromium}=require('playwright');
+const http=require('http'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const base=path.resolve(__dirname,'../AionDpsMeter.UI/wwwroot/companion');
+const harness=`<!doctype html><html><head><link rel="stylesheet" href="/companion.css"></head><body style="margin:0;height:100vh"><div id="root" style="height:100%"></div><script type="module">import {mount} from '/companion.mjs';window.instance=await mount(document.querySelector('#root'),{invokeMethodAsync:async(name,json)=>{if(name==='Load')return localStorage.getItem('state');if(name==='Save')localStorage.setItem('state',json);}});</script></body></html>`;
+fs.mkdirSync(path.resolve(__dirname,'../.artifacts'),{recursive:true});
+const server=http.createServer((req,res)=>{if(req.url==='/'){res.setHeader('Content-Type','text/html');res.end(harness);return;}const file=path.resolve(base,'.'+decodeURIComponent(req.url.split('?')[0]));if(!file.startsWith(base+path.sep)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',({'.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp'})[path.extname(file)]||'text/plain');res.end(fs.readFileSync(file));});
+(async()=>{
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await chromium.launch({channel:'msedge',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1060,height:820}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(`http://127.0.0.1:${server.address().port}`);
+ await page.locator('.wc-event').first().waitFor();assert.equal(await page.locator('.wc-event').count(),9);
+ await page.screenshot({path:path.resolve(__dirname,'../.artifacts/schedule.png'),fullPage:true});
+ await page.getByRole('button',{name:'Hidden cubes',exact:true}).click();
+ assert.equal(await page.locator('.wc-pin').count(),95);
+ await page.waitForFunction(()=>document.querySelector('.wc-plane img').naturalWidth>0);
+ assert.equal(await page.locator('.wc-plane img').evaluate(e=>e.naturalWidth),2048);
+ await page.locator('[data-focus="verteron_A"]').click();
+ assert.equal(await page.locator('.wc-spot').count(),10);
+ await page.locator('.wc-inspector [data-check]').check();
+ assert.equal(await page.locator('.wc-checklist [data-check="verteron_A"]').isChecked(),true);
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('state')).profiles['Nezekan · Elyos'].verteron_A===true);
+ await page.locator('.wc-search').fill('Altamia Canyon');assert.ok(await page.locator('.wc-pin').count()<95);
+ await page.locator('.wc-search').fill('');
+ const before=await page.locator('.wc-plane').getAttribute('style');await page.getByRole('button',{name:'Zoom in',exact:true}).click();assert.notEqual(await page.locator('.wc-plane').getAttribute('style'),before);
+ await page.screenshot({path:path.resolve(__dirname,'../.artifacts/cubes.png'),fullPage:true});
+ await page.reload();await page.getByRole('button',{name:'Hidden cubes',exact:true}).click();assert.equal(await page.locator('.wc-checklist [data-check="verteron_A"]').isChecked(),true);
+ page.once('dialog',d=>d.accept('Alt character'));await page.getByRole('button',{name:'New character',exact:true}).click();assert.equal(await page.locator('.wc-checklist [data-check="verteron_A"]').isChecked(),false);
+ await page.locator('.wc-profile').selectOption({label:'Nezekan · Elyos'});assert.equal(await page.locator('.wc-checklist [data-check="verteron_A"]').isChecked(),true);
+ await page.locator('.wc-zone').selectOption('altgard');assert.equal(await page.locator('.wc-pin').count(),59);
+ await page.getByRole('button',{name:'Settings',exact:true}).click();await page.locator('[data-event="daily"] [name="hours"]').fill('16');await page.getByRole('button',{name:'Save schedule',exact:true}).click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('state')).events.find(e=>e.id==='daily').hours[0]===16);
+ const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Export backup',exact:true}).click();const download=await downloadPromise;assert.equal(download.suggestedFilename(),'ratmeter-companion-backup.json');
+ await page.locator('.wc-import-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"version":9}')});await page.waitForFunction(()=>document.querySelector('.wc-save-status').textContent.startsWith('Import failed'));
+ assert.deepEqual(errors,[]);
+ await page.evaluate(()=>window.instance.dispose());assert.equal(await page.locator('.wc-shell').count(),0);
+ console.log('Browser smoke passed: events, offline maps, pins, checklist sync, search, zoom, persistence, profiles, second map, schedule editing, backup export, invalid import, disposal.');
+}finally{await browser.close();server.close();}
+})().catch(e=>{console.error(e);server.close();process.exitCode=1;});

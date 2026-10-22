@@ -23,7 +23,15 @@ jobs:
         run: dotnet restore AionDpsMeter.slnx
 
       - name: Tests
-        run: dotnet test AionDpsMeter.slnx --no-restore
+        run: dotnet test --solution AionDpsMeter.slnx --no-restore
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Companion schedule and data tests
+        run: node --test tests/companion.test.mjs
 
       - name: Build
         run: dotnet build AionDpsMeter.slnx --no-restore

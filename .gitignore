@@ -372,3 +372,8 @@ combat-history.db
 combat-history.db-shm
 combat-history.db-wal
 appsettings.user.json
+
+# Companion local builds and browser checks
+.artifacts/
+local-build/
+node_modules/

@@ -24,6 +24,7 @@ namespace AionDpsMeter.UI
     /// </summary>
     public partial class App : Application
     {
+        private bool companionOnly;
         public static IHost AppHost { get; private set; }
 
         public App()
@@ -73,6 +74,21 @@ namespace AionDpsMeter.UI
         {
             await AppHost.StartAsync();
 
+            companionOnly = e.Args.Contains("--world-companion");
+            if (companionOnly)
+            {
+                // Also permits offline companion use without initializing packet capture.
+                var companion = new BlazorWindow(AppHost.Services, typeof(Pages.WorldCompanion))
+                {
+                    Title = "RATmeter World Companion", Width = 1060, Height = 820,
+                    MinWidth = 700, MinHeight = 550, ResizeMode = ResizeMode.CanResizeWithGrip
+                };
+                AppHost.Services.GetRequiredService<IWindowManagerService>()
+                    .Open(WindowKey.WorldCompanion, companion, true);
+                base.OnStartup(e);
+                return;
+            }
+
             _ = AppHost.Services.GetRequiredService<ICombatHistoryStore>();
 
             var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
@@ -87,6 +103,13 @@ namespace AionDpsMeter.UI
         {
             try
             {
+                if (companionOnly)
+                {
+                    await AppHost.StopAsync();
+                    await Log.CloseAndFlushAsync();
+                    base.OnExit(e);
+                    return;
+                }
                 var sessionManager = AppHost.Services.GetRequiredService<CombatSessionManager>();
                 var historyStore = AppHost.Services.GetRequiredService<ICombatHistoryStore>();
                 sessionManager.CompleteAndPersistActiveSessions();

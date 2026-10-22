@@ -66,6 +66,22 @@ namespace AionDpsMeter.UI.Services.Windowing
         }
 
 
+        public void OpenWorldCompanion()
+        {
+            var win = new BlazorWindow(App.AppHost.Services, typeof(WorldCompanion))
+            {
+                Title = "RATmeter World Companion", Width = 1060, Height = 820,
+                MinWidth = 700, MinHeight = 550, ResizeMode = System.Windows.ResizeMode.CanResizeWithGrip
+            };
+            win.Closing += (_, _) =>
+            {
+                if (win.WindowState == System.Windows.WindowState.Normal)
+                    settingsService.SetWindowBounds(WindowKey.WorldCompanion, new WindowBounds
+                    { Left = win.Left, Top = win.Top, Width = win.Width, Height = win.Height });
+            };
+            windowManager.Open(WindowKey.WorldCompanion, win, true, owner: MainWindow, persistenceMode: WindowPersistenceMode.Bounds);
+        }
+
         public void OpenSettings()
         {
             IsBuffEdit = true;

@@ -1,0 +1,72 @@
+@using Microsoft.JSInterop
+@using System.IO
+@using AionDpsMeter.Core.Windowing
+@using AionDpsMeter.Services.Services.Settings
+@using AionDpsMeter.UI.Services.Windowing
+@inject IJSRuntime JS
+@inject IWindowManagerService Windows
+@implements IAsyncDisposable
+
+<link rel="stylesheet" href="companion/companion.css" />
+<div @ref="root" style="height:100%" aria-label="World companion"></div>
+@if (error is not null)
+{
+    <p role="alert">@error</p>
+}
+
+@code {
+    private ElementReference root;
+    private IJSObjectReference? module;
+    private IJSObjectReference? instance;
+    private DotNetObjectReference<WorldCompanion>? reference;
+    private string? error;
+    private bool disposed;
+    private static readonly CompanionStore Store = new(Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "HarryNguon", "RATmeter", "WorldCompanion"));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./companion/companion.mjs");
+            if (disposed) { await module.DisposeAsync(); return; }
+            reference = DotNetObjectReference.Create(this);
+            instance = await module.InvokeAsync<IJSObjectReference>("mount", root, reference);
+            if (disposed) await ReleaseAsync();
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException)
+        {
+            error = "Unable to open World Companion. Close and reopen it. " + ex.Message;
+            if (!disposed) StateHasChanged();
+        }
+    }
+
+    [JSInvokable] public string? Load() => Store.Load();
+    [JSInvokable] public void Save(string json) => Store.Save(json);
+    [JSInvokable] public void Drag() => Windows.Drag(WindowKey.WorldCompanion);
+    [JSInvokable] public void Close() => Windows.Close(WindowKey.WorldCompanion);
+
+    private async ValueTask ReleaseAsync()
+    {
+        try
+        {
+            if (instance is not null)
+            {
+                await instance.InvokeVoidAsync("dispose");
+                await instance.DisposeAsync();
+                instance = null;
+            }
+            if (module is not null) { await module.DisposeAsync(); module = null; }
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or ObjectDisposedException or InvalidOperationException) { }
+        finally { reference?.Dispose(); reference = null; }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        disposed = true;
+        await ReleaseAsync();
+    }
+}
