@@ -41,24 +41,9 @@ The original DPS settings and combat database are not used to store companion pr
 Updates now check `harrynguon/AIon2-Dps-Meter`, so accepting an upstream release
 cannot silently replace the fork. No fork release has been published by this change.
 
-## Build and test
+## Build, test and handoff
 
-Requires .NET 10 SDK, Node 22+ for the JavaScript tests, and the original application's
-Npcap/WebView2 runtime prerequisites.
-
-```powershell
-dotnet build AionDpsMeter.slnx
-dotnet test --solution AionDpsMeter.slnx
-node --test tests/companion.test.mjs
-npm test # Includes schedule, catalog and saved-state validation
-npm install
-npm run test:browser # Uses installed Microsoft Edge; screenshots in .artifacts/
-```
-
-Companion UI: `AionDpsMeter.UI/wwwroot/companion/`.
-Schedule engine is a pure ES module, tested without the game or network.
-Blazor lifecycle/Windows bridge: `Pages/WorldCompanion.razor`.
-Persistence: `CompanionStore.cs`.
+See the [maintainer documentation](docs/README.md) for setup, build/test commands, architecture, security and the pending acceptance checklist.
 
 ## Attribution
 
