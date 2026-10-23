@@ -1,3 +1,4 @@
+using System.Windows.Threading;
 using AionDpsMeter.UI.Services.Windowing;
 
 namespace AionDpsMeter.Tests;
@@ -8,8 +9,40 @@ public sealed class DeferredWindowCloseTests
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
 
+    // The gate runs on its window's dispatcher, so its deferred turns wait until the caller yields. On the
+    // thread pool they could run before the test's next statement (for example before MarkClosed), so each
+    // test runs on its own WPF dispatcher thread.
+    private static Task OnDispatcherAsync(Func<Task> body)
+    {
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var thread = new Thread(() =>
+        {
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            dispatcher.InvokeAsync(async () =>
+            {
+                try
+                {
+                    await body();
+                    done.TrySetResult();
+                }
+                catch (Exception ex)
+                {
+                    done.TrySetException(ex);
+                }
+                finally
+                {
+                    dispatcher.InvokeShutdown();
+                }
+            });
+            Dispatcher.Run();
+        }) { IsBackground = true };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        return done.Task;
+    }
+
     [Fact]
-    public async Task FirstCloseWaitsForReleaseThenClosesOnce()
+    public Task FirstCloseWaitsForReleaseThenClosesOnce() => OnDispatcherAsync(async () =>
     {
         var started = new TaskCompletionSource();
         var release = new TaskCompletionSource();
@@ -29,10 +62,10 @@ public sealed class DeferredWindowCloseTests
         Assert.False(gate.ShouldCancelClose());
         Assert.Equal(1, releases);
         Assert.Equal(1, closes);
-    }
+    });
 
     [Fact]
-    public async Task SynchronousReleaseStillRunsOutsideTheClosingCall()
+    public Task SynchronousReleaseStillRunsOutsideTheClosingCall() => OnDispatcherAsync(async () =>
     {
         var releases = 0;
         var closes = 0;
@@ -46,10 +79,10 @@ public sealed class DeferredWindowCloseTests
         Assert.Equal(1, releases);
         Assert.Equal(1, closes);
         Assert.False(gate.ShouldCancelClose());
-    }
+    });
 
     [Fact]
-    public async Task ReleaseFailureIsReportedAndStillCloses()
+    public Task ReleaseFailureIsReportedAndStillCloses() => OnDispatcherAsync(async () =>
     {
         Exception? reported = null;
         var closes = 0;
@@ -63,10 +96,10 @@ public sealed class DeferredWindowCloseTests
         Assert.IsType<InvalidOperationException>(reported);
         Assert.Equal(1, closes);
         Assert.False(gate.ShouldCancelClose());
-    }
+    });
 
     [Fact]
-    public async Task SynchronousReleaseFailureDoesNotBlockClosing()
+    public Task SynchronousReleaseFailureDoesNotBlockClosing() => OnDispatcherAsync(async () =>
     {
         Exception? reported = null;
         var closes = 0;
@@ -79,10 +112,10 @@ public sealed class DeferredWindowCloseTests
         await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.NotNull(reported);
         Assert.Equal(1, closes);
-    }
+    });
 
     [Fact]
-    public async Task ForcedCloseBeforeReleaseSkipsReleaseAndClose()
+    public Task ForcedCloseBeforeReleaseSkipsReleaseAndClose() => OnDispatcherAsync(async () =>
     {
         var releases = 0;
         var closes = 0;
@@ -95,10 +128,10 @@ public sealed class DeferredWindowCloseTests
         Assert.Equal(0, releases);
         Assert.Equal(0, closes);
         Assert.False(gate.ShouldCancelClose());
-    }
+    });
 
     [Fact]
-    public async Task ForcedCloseDuringReleaseIsNotRepeated()
+    public Task ForcedCloseDuringReleaseIsNotRepeated() => OnDispatcherAsync(async () =>
     {
         var started = new TaskCompletionSource();
         var release = new TaskCompletionSource();
@@ -113,5 +146,5 @@ public sealed class DeferredWindowCloseTests
         release.SetResult();
         await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.Equal(0, closes);
-    }
+    });
 }

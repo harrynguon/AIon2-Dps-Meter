@@ -1,7 +1,7 @@
 # Handoff — 2026-10-23
 
 Fork: https://github.com/harrynguon/AIon2-Dps-Meter (default branch master).
-PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/1 (feature/world-companion) was squash-merged into master as b4740c5; the original commits stay on that branch and the PR. Game-terms documentation: branch docs/game-terms-risk, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/2. The newest dated section below has the latest checks.
+PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/1 (feature/world-companion) was squash-merged into master as b4740c5; the original commits stay on that branch and the PR. Game-terms documentation: branch docs/game-terms-risk, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/2. Native window lifecycle check: branch test/window-lifecycle-harness, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/3 (open, awaiting the player's go-ahead). The newest dated section below has the latest checks.
 
 ## Completed
 
@@ -68,8 +68,18 @@ A read-only auditor (.claude/agents/pr-auditor.md) reviewed PR #1 at 36d2e93: ap
 - A2Tools (Global preset source) added to provenance and attribution; purpose comments added; duplicated preset sections and stale Nezekan notes consolidated.
 - Merge strategy: squash, so the removed maps/coordinates stay out of master history.
 
-Checks after these fixes: 22 .NET tests, 12 JS tests, Edge browser checks, build and Release publish passed; the native harness passed three open/close cycles and shutdown with the companion open (exit 0); the published exe passed companion-only open/render/close with no crash events. Still not covered: integrated meter with capture and combat, Alt+F4 and ◈ from both layouts, and a ◈ click during the brief close teardown (it focuses the closing window, so the click is lost). No automated test drives BlazorWindow itself; the native harness is not committed.
+Checks after these fixes: 22 .NET tests, 12 JS tests, Edge browser checks, build and Release publish passed; the native harness passed three open/close cycles and shutdown with the companion open (exit 0); the published exe passed companion-only open/render/close with no crash events. Still not covered: integrated meter with capture and combat, Alt+F4 and ◈ from both layouts, and a ◈ click during the brief close teardown (it focuses the closing window, so the click is lost). No automated test drives BlazorWindow itself; the native harness is not committed. (This last sentence is superseded by "Native lifecycle check automated" below; the gaps listed before it remain.)
 
 ## Game terms — 2026-10-23
 
 SECURITY.md records NC's EULA and AION 2 Operation Policy clauses and how they apply. The risk applies now, not only at a binary release: the Operation Policy bans creating or distributing unauthorized programs at integrated-account level, this fork's source (including packet decoding) is already public on GitHub, and new decoding such as Kinah counts as creating. Re-read both documents before a release or new packet decoding.
+
+## Native lifecycle check automated — 2026-10-23
+
+The off-screen native harness is now committed as AionDpsMeter.LifecycleCheck and runs in CI after the build (see DEVELOPMENT.md, Native window lifecycle check). It hosts the real BlazorWindow and WorldCompanion in a long-lived WPF application. It closes companions with ✕ (twice) and with WM_CLOSE, reopening after each, and then shuts down with one open. Any unhandled exception fails it. With DeferredWindowClose.ShouldCancelClose forced to return false, it fails at the first close with the reported Blazor IpcSender stack; on the fix it passes (exit 0).
+
+Unlike the earlier harness, it drives the page through CoreWebView2 script execution (no remote-debugging port), and reuses the UI's static web assets manifest instead of copying a publish. CompanionStore now comes from DI (AddCompanionStore, same per-user default), so the check uses a scratch directory and never touches player settings.
+
+The existing DeferredWindowCloseTests ran the gate on the thread pool. There, the deferred turn could run before MarkClosed, so ForcedCloseBeforeReleaseSkipsReleaseAndClose failed depending on timing. Here it failed in one full `dotnet test` run and in 40/40 runs of the class on its own. The auditor saw it fail in 29/30 runs of that test on its own, but pass in 40/40 class runs and 10/10 full-suite runs; CI passed. The tests now run on a WPF dispatcher thread, as in a window. Production close code is unchanged.
+
+CI passed on windows-latest with the new step (PR run 39906262990), and a pr-auditor review approved with nits, which are addressed (see WORKLOG.md). Still not covered: the integrated meter with capture and combat, ◈ from both layouts, real Alt+F4 keyboard input, a ◈ click during close teardown, the published single-file layout, and whether components are actually disposed (the check does not assert it). The in-game acceptance checklist above is unchanged.
