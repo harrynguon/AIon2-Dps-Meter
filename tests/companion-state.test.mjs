@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {defaults} from '../AionDpsMeter.UI/wwwroot/companion/schedule.mjs';
-import {initialState,validateState} from '../AionDpsMeter.UI/wwwroot/companion/state.mjs';
+import {defaults} from '../AionDpsMeter.Companion/wwwroot/schedule.mjs';
+import {initialState,validateState} from '../AionDpsMeter.Companion/wwwroot/state.mjs';
 
 test('timer-only state survives validation without shared mutable references',()=>{
   const input=initialState();

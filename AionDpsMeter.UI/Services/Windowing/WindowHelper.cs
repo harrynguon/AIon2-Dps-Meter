@@ -66,30 +66,9 @@ namespace AionDpsMeter.UI.Services.Windowing
         }
 
 
-        // Focuses an open companion instead of constructing a window that would never be shown:
-        // WPF keeps every constructed window until exit and closes it then, firing Closing.
-        public void OpenWorldCompanion()
-        {
-            if (windowManager.IsOpen(WindowKey.WorldCompanion))
-            {
-                windowManager.Focus(WindowKey.WorldCompanion);
-                return;
-            }
-            var win = new BlazorWindow(App.AppHost.Services, typeof(WorldCompanion))
-            {
-                Title = "RATmeter World Companion", Width = 1060, Height = 820,
-                MinWidth = 700, MinHeight = 550, ResizeMode = System.Windows.ResizeMode.CanResizeWithGrip
-            };
-            // Closing runs again after deferred Blazor teardown; only real, finite bounds are saved.
-            win.Closing += (_, _) =>
-            {
-                if (win.IsLoaded && win.WindowState == System.Windows.WindowState.Normal &&
-                    double.IsFinite(win.Left) && double.IsFinite(win.Top))
-                    settingsService.SetWindowBounds(WindowKey.WorldCompanion, new WindowBounds
-                    { Left = win.Left, Top = win.Top, Width = win.Width, Height = win.Height });
-            };
-            windowManager.Open(WindowKey.WorldCompanion, win, true, owner: MainWindow, persistenceMode: WindowPersistenceMode.Bounds);
-        }
+        // World Companion hook; the window logic lives in AionDpsMeter.UI/Companion.
+        public void OpenWorldCompanion() =>
+            serviceProvider.GetRequiredService<Companion.WorldCompanionLauncher>().Open(MainWindow, rememberBounds: true);
 
         public void OpenSettings()
         {

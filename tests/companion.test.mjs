@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {defaults,occurrence,timeline,validateEvents} from '../AionDpsMeter.UI/wwwroot/companion/schedule.mjs';
+import {defaults,occurrence,timeline,validateEvents} from '../AionDpsMeter.Companion/wwwroot/schedule.mjs';
 const at=s=>Date.parse(s),event=id=>defaults.find(e=>e.id===id);
 test('UTC schedules do not move with the server clock',()=>{
   for(const offset of [-8,0,5.5,9,11])assert.equal(occurrence(event('kaira'),at('2026-10-23T00:59:59Z'),offset).start,at('2026-10-23T01:00:00Z'));
@@ -40,7 +40,7 @@ test('invalid schedule edits are rejected',()=>{
 
 // Exercise Global source-based rules without changing legacy-rule regression tests.
 test('Global preset boundaries, UTC resets and unknown end times',async()=>{
-  const {globalSchedule}=await import('../AionDpsMeter.UI/wwwroot/companion/presets.mjs');
+  const {globalSchedule}=await import('../AionDpsMeter.Companion/wwwroot/presets.mjs');
   const rules=globalSchedule(),get=id=>rules.find(e=>e.id===id);
   for(const offset of [-8,0,9,11]) assert.equal(occurrence(get('daily'),at('2026-10-23T06:59:59Z'),offset).start,at('2026-10-23T07:00:00Z'));
   assert.equal(occurrence(get('weekly'),at('2026-10-28T07:00:00Z'),9).start,at('2026-11-04T07:00:00Z'));

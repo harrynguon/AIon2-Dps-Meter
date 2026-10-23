@@ -1,14 +1,12 @@
+@* World Companion page: mounts companion.mjs and bridges it to the host-provided store and window. *@
 @using Microsoft.JSInterop
-@using AionDpsMeter.Core.Windowing
-@using AionDpsMeter.Services.Services.Settings
-@using AionDpsMeter.UI.Services.Windowing
 @inject IJSRuntime JS
-@inject IWindowManagerService Windows
-@* One store for every companion window (AddCompanionStore): the per-user default in the meter, a scratch directory in checks. *@
+@* Supplied by the host (ICompanionWindow) and AddWorldCompanion (one store for every companion window). *@
+@inject ICompanionWindow Window
 @inject CompanionStore Store
 @implements IAsyncDisposable
 
-<link rel="stylesheet" href="companion/companion.css" />
+<link rel="stylesheet" href="_content/AionDpsMeter.Companion/companion.css" />
 <div @ref="root" style="height:100%" aria-label="World companion"></div>
 @if (error is not null)
 {
@@ -23,6 +21,8 @@
     private string? error;
     private bool disposed;
     private static readonly TimeSpan JsTeardownLimit = TimeSpan.FromSeconds(2);
+    // Must match StaticWebAssetBasePath in AionDpsMeter.Companion.csproj (also used by the stylesheet link above).
+    private const string ModuleScript = "./_content/AionDpsMeter.Companion/companion.mjs";
 
     // Startup that finishes after disposal sends nothing further: the page is torn down with its window.
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -30,7 +30,7 @@
         if (!firstRender) return;
         try
         {
-            module = await JS.InvokeAsync<IJSObjectReference>("import", "./companion/companion.mjs");
+            module = await JS.InvokeAsync<IJSObjectReference>("import", ModuleScript);
             if (disposed) return;
             reference = DotNetObjectReference.Create(this);
             instance = await module.InvokeAsync<IJSObjectReference>("mount", root, reference);
@@ -49,16 +49,16 @@
     /// <summary>Persists validated state; the store rejects other schema versions and oversized data.</summary>
     [JSInvokable] public void Save(string json) => Store.Save(json);
     /// <summary>Starts a native window drag from the Move button.</summary>
-    [JSInvokable] public void Drag() => Windows.Drag(WindowKey.WorldCompanion);
-    /// <summary>Requests a close; BlazorWindow defers teardown until this call has replied.</summary>
-    [JSInvokable] public void Close() => Windows.Close(WindowKey.WorldCompanion);
+    [JSInvokable] public void Drag() => Window.Drag();
+    /// <summary>Requests a close; the host must keep the WebView alive until this call has replied.</summary>
+    [JSInvokable] public void Close() => Window.Close();
 
     // Any unhandled component exception is fatal to the BlazorWebView host, so interop failures are contained here.
     private static bool IsInteropFailure(Exception ex) =>
         ex is JSException or JSDisconnectedException or OperationCanceledException
             or ObjectDisposedException or InvalidOperationException;
 
-    // BlazorWindow keeps the WebView alive until this completes. One deadline covers every JS round
+    // The host keeps the WebView alive until this completes (the meter's BlazorWindow defers teardown). One deadline covers every JS round
     // trip, so an unresponsive page cannot hold its window open; it is abandoned without further
     // messages and destroyed with the window.
     private async ValueTask ReleaseAsync()

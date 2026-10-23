@@ -72,3 +72,19 @@ A pr-auditor review of PR #3 at d8a28ac approved with nits. It re-ran every chec
 - Purpose comments for the remaining helpers, and the HANDOFF superseded marker clarified.
 
 Open: the integrated meter with capture/combat, ◈ and real Alt+F4 input remain manual (LIVE-TESTING.md step 5); the check does not assert component disposal. Next: the player's go-ahead to squash-merge PR #3.
+
+## 2026-10-23 — Lifecycle check merged
+
+With the player's go-ahead, squash-merged PR #3 into master as d8f16be, pinned to the reviewed head 3a1110d (same tree). Before merging, PR CI on 3a1110d (run 39907889988) passed every step, including the lifecycle check (PASS, 4 companions); the branch push run and master's push CI for d8f16be (run 39908137289) passed afterwards. Updated HANDOFF.md, which still described PR #3 as open. Documentation only; no tests rerun. Open: in-game acceptance (HANDOFF checklist, LIVE-TESTING.md step 5). Next: the player tests the merged build in the integrated meter.
+
+## 2026-10-23 — Companion module and fork boundary
+
+Player decision: stay on this fork and merge upstream releases; keep fork code modular so merges stay easy and the companion can move to a future meter. Moved the page, browser assets and CompanionStore into the AionDpsMeter.Companion Razor class library (net10.0, no repository project references) behind ICompanionWindow and AddWorldCompanion. Moved meter wiring (store location, window actions, launcher, companion-only mode via an App partial) to AionDpsMeter.UI/Companion. Reverted the upstream ServiceCollectionExtensions edit. Upstream-file additions fell from 126 to 73 lines. Added the fork-boundary rules to AGENTS.md, the seam table and reuse guide to ARCHITECTURE.md, a boundary check to the pr-auditor, and WorldCompanionHostTests (module independence, unchanged store location, host registration).
+
+Checks: 28 .NET tests, 12 JS tests, Edge browser checks, solution build, native lifecycle check (exit 0), Release publish (assets under wwwroot/_content/AionDpsMeter.Companion) and published companion-only open/render/close with no crash events. Open: in-game acceptance. Next: PR, auditor review, merge on the player's go-ahead.
+
+## 2026-10-23 — PR #5 audit fixes and faster auditor
+
+The auditor (about 10 minutes) approved PR #5 with nits. Fixed: boundary test also checks the build's dependency graph (mutation with an unused Core reference fails only that test); App.xaml.cs hooks reduced to single lines by moving base.OnStartup/OnExit into the App partial; StaticWebAssetBasePath pinned in the module; ARCHITECTURE persistence paragraph, seam table (DeferredWindowClose, fork tests in upstream folders), test counts and comments corrected. Folded PR #4's record of the PR #3 merge into this branch. Player asked for faster audits: pr-auditor now defaults to a standard pass at medium effort that cites green CI instead of rerunning it; deep passes are for risky areas; docs-only PRs skip the audit (AGENTS.md "Review and merge").
+
+Checks: 28 .NET tests, 12 JS tests, Edge browser checks, build, lifecycle check (exit 0), Release publish and the published companion-only smoke check (open, render, close, no crash events) passed. No second audit: the fixes apply the auditor's own suggestions. Open: in-game acceptance. Next: squash-merge PR #5 on the player's go-ahead and close PR #4.
