@@ -49,3 +49,23 @@ test('cube catalog is complete with unique IDs and usable coordinates',async()=>
   }
   assert.equal(count,2811);
 });
+
+// Exercise Global source-based rules without changing legacy-rule regression tests.
+test('Global preset boundaries, UTC resets and unknown end times',async()=>{
+  const {globalSchedule}=await import('../AionDpsMeter.UI/wwwroot/companion/presets.mjs');
+  const rules=globalSchedule(),get=id=>rules.find(e=>e.id===id);
+  for(const offset of [-8,0,9,11]) assert.equal(occurrence(get('daily'),at('2026-10-23T06:59:59Z'),offset).start,at('2026-10-23T07:00:00Z'));
+  assert.equal(occurrence(get('weekly'),at('2026-10-28T07:00:00Z'),9).start,at('2026-11-04T07:00:00Z'));
+  assert.equal(occurrence(get('rift'),at('2026-10-23T02:09:59Z'),9).phase,'Portal open');
+  assert.equal(occurrence(get('rift'),at('2026-10-23T02:10:00Z'),9).start,at('2026-10-23T05:00:00Z'));
+  for(const [id,start,total] of [['shugo','2026-10-23T00:00:00Z',7],['invasion','2026-10-23T00:30:00Z',13]]){
+    const time=at(start),e=get(id);
+    assert.equal(occurrence(e,time+179999,9).phase,'Entry open');
+    assert.equal(occurrence(e,time+179999,9).remaining,1);
+    assert.equal(occurrence(e,time+180000,9).phase,'Active · entry closed');
+    assert.equal(occurrence(e,time+total*60000,9).active,false);
+  }
+  for(const id of ['kaira','nahma','executors','siege'])assert.equal(get(id).duration,0);
+  get('daily').hours[0]=4;assert.equal(globalSchedule().find(e=>e.id==='daily').hours[0],7);
+  for(const entryDuration of [-1,8,Infinity,'3']){const bad=globalSchedule();bad.find(e=>e.id==='shugo').entryDuration=entryDuration;assert.throws(()=>validateEvents(bad));}
+});

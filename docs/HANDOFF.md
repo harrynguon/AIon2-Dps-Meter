@@ -34,3 +34,7 @@ Resolve map/data redistribution provenance before public binary distribution. Re
 ## Additional schedule evidence
 
 The [A2Tools comparison](TIMER-COMPARISON.md) supports 07:00 UTC resets and a server-based 02:00 rift cycle, differing from our defaults. It also identifies three-minute Shugo/Invasion entry windows. Prioritize an explicit Global preset preserving saved customizations. This is third-party source evidence; live Nezekan verification remains pending.
+
+## Global preset implemented — 2026-10-23
+
+New installations use the source-based Global preset. Existing saves retain every custom rule and cube profile. In Settings, Load Global preset previews rules; Save schedule applies them. The server offset stays under user control (Asia: +9). Daily/Wednesday reset is 07:00 UTC. Rifts start at server 02:00 every three hours with a ten-minute portal window; no unsupported sixty-minute activity window is assumed. Shugo/Invasion have three-minute entry windows and seven/thirteen-minute total activity. Entry-close countdowns switch to remaining activity after closure. Boss/siege end times are unknown and do not generate an assumed active window. Live Nezekan verification remains pending.

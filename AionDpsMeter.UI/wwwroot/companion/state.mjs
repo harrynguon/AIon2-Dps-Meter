@@ -1,5 +1,7 @@
 import {defaults, validateEvents} from './schedule.mjs';
+import {globalSchedule} from './presets.mjs';
 
+// Only new installations use Global rules; saved settings are preserved.
 export function initialState() {
   return {
     version: 1,
@@ -7,7 +9,7 @@ export function initialState() {
     profile: 'Nezekan · Elyos',
     zone: 'verteron',
     profiles: {'Nezekan · Elyos': {}},
-    events: structuredClone(defaults)
+    events: globalSchedule()
   };
 }
 
@@ -51,6 +53,8 @@ export function validateState(input, data) {
       minute: saved.minute,
       duration: saved.duration
     };
+    // Old backups omit entryDuration and retain their previous behavior.
+    if (saved.entryDuration !== undefined) event.entryDuration = saved.entryDuration;
     delete event.days;
     if (saved.days) event.days = [...new Set(saved.days)].sort();
     if (base.kind === 'rift') {

@@ -7,6 +7,7 @@ The .NET 10 WPF meter hosts BlazorWebView. The companion is a separate resizable
 | AionDpsMeter.UI/Pages/WorldCompanion.razor | JS lifecycle and native load/save/window bridge |
 | AionDpsMeter.UI/wwwroot/companion/companion.mjs | UI, gestures, profiles, persistence queue, recovery |
 | AionDpsMeter.UI/wwwroot/companion/schedule.mjs | Pure recurrence and validation |
+| AionDpsMeter.UI/wwwroot/companion/presets.mjs | Independent source-based Global rule factory |
 | AionDpsMeter.UI/wwwroot/companion/state.mjs | Shared saved/imported state schema |
 | AionDpsMeter.UI/wwwroot/companion/cubes.json and maps/ | Offline catalog and two 2048px maps |
 | AionDpsMeter.Services/Services/Settings/CompanionStore.cs | Bounded file I/O, atomic replacement and backup |
@@ -14,7 +15,7 @@ The .NET 10 WPF meter hosts BlazorWebView. The companion is a separate resizable
 | AionDpsMeter.UI/App.xaml.cs | Standalone mode bypasses capture |
 | AionDpsMeter.Services/Services/Update/UpdateCheckerService.cs | Fork update feed |
 
-## Initial schedule (unverified for Nezekan)
+## Legacy schedule (retained for saved custom rules)
 
 | Event | Recurrence | Window |
 | --- | --- | --- |
@@ -45,3 +46,7 @@ Unreadable/invalid saves trigger temporary defaults with writes blocked. Recover
 - AionDpsMeter.Tests/SqliteRuntimeTests.cs: loaded SQLite version.
 
 Recurrence changes need boundary checks; state changes need compatibility and invalid-input checks. Browser checks do not prove native host or capture behavior.
+
+## Global preset implemented — 2026-10-23
+
+New installations use the source-based Global preset. Existing saves retain every custom rule and cube profile. In Settings, Load Global preset previews rules; Save schedule applies them. The server offset stays under user control (Asia: +9). Daily/Wednesday reset is 07:00 UTC. Rifts start at server 02:00 every three hours with a ten-minute portal window; no unsupported sixty-minute activity window is assumed. Shugo/Invasion have three-minute entry windows and seven/thirteen-minute total activity. Entry-close countdowns switch to remaining activity after closure. Boss/siege end times are unknown and do not generate an assumed active window. Live Nezekan verification remains pending.

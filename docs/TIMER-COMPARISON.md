@@ -57,3 +57,5 @@ Add a clearly sourced Global schedule preset rather than silently overwriting sa
 - [Timer implementation](https://github.com/taengu/A2Tools-Plugins/blob/b11f345c93494a2b6a77142002dc26a656b610d2/plugins/event-timers/plugin.js)
 - [Generator](https://github.com/taengu/A2Tools-Plugins/blob/b11f345c93494a2b6a77142002dc26a656b610d2/tools/event-timers/build.py)
 - [Plugin README](https://github.com/taengu/A2Tools-Plugins/blob/b11f345c93494a2b6a77142002dc26a656b610d2/plugins/event-timers/README.md)
+
+Implementation follow-up: the recommended explicit preset is now implemented; see HANDOFF.md. The comparison table above records the pre-change baseline, not new-install defaults.

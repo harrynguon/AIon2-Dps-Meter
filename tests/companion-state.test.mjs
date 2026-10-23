@@ -38,3 +38,12 @@ test('backup schedule values cannot change event identity or metadata',()=>{
   assert.equal(clean.events[0].name,'Watcher Kaira');assert.equal(clean.events[0].kind,'boss');
   assert.deepEqual(clean.events[0].hours,[1,4]);assert.ok(!('unexpected' in clean));
 });
+
+// Loading old custom schedules must not silently apply the new preset.
+test('legacy custom schedules and new entry windows survive round trips',async()=>{
+  const {defaults}=await import('../AionDpsMeter.UI/wwwroot/companion/schedule.mjs');
+  const old=initialState();old.events=structuredClone(defaults);old.events.find(e=>e.id==='daily').hours=[18];old.profiles[old.profile].verteron_A=true;
+  assert.deepEqual(validateState(old,catalog),old);
+  const fresh=initialState();assert.deepEqual(validateState(fresh,catalog),fresh);
+  assert.equal(fresh.events.find(e=>e.id==='shugo').entryDuration,3);
+});

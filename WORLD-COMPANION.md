@@ -20,10 +20,10 @@ without starting packet capture.
 
 ## Schedule accuracy
 
-The initial rules reproduce the requested Byanski data. They are **not verified
+New installations use the Global preset described below; existing rules are preserved. They are **not verified
 against Global Asia / Nezekan**. UTC+9 is the initial server-clock assumption.
-Kaira and rifts are UTC-based; other events use the configured server offset.
-Daily and Wednesday resets default to 09:00 server time. Check the in-game calendar
+The Global preset uses server time for Kaira/rifts and UTC for resets.
+Global daily and Wednesday resets use 07:00 UTC (16:00 Asia server time). Check the in-game calendar
 and edit **Settings** before relying on alerts/countdowns. There are no audio alerts.
 “Scheduled active” does not confirm a boss is alive. Weekly resets track the scheduled
 tally time, not your actual Abyss ranking. Shugo lists the minigames; it does not
@@ -89,5 +89,9 @@ Storage paths are absolute and resolved from the platform's per-user application
 The player reported a server clock reading consistent with UTC+9 and tentatively
 reported daily reset at 18:00 Australian time. Assuming Sydney during daylight
 saving, that is 16:00 UTC+9 / 07:00 UTC. This remains a provisional observation;
-the default schedule has not been silently changed or marked verified. The next
+existing saved rules are not silently changed or marked verified; the Global preset now corroborates this observation. The next
 daily reset countdown and rift opening should be checked directly in-game.
+
+## Global preset implemented — 2026-10-23
+
+New installations use the source-based Global preset. Existing saves retain every custom rule and cube profile. In Settings, Load Global preset previews rules; Save schedule applies them. The server offset stays under user control (Asia: +9). Daily/Wednesday reset is 07:00 UTC. Rifts start at server 02:00 every three hours with a ten-minute portal window; no unsupported sixty-minute activity window is assumed. Shugo/Invasion have three-minute entry windows and seven/thirteen-minute total activity. Entry-close countdowns switch to remaining activity after closure. Boss/siege end times are unknown and do not generate an assumed active window. Live Nezekan verification remains pending.

@@ -32,6 +32,15 @@ try{
  await page.locator('.wc-zone').selectOption('altgard');assert.equal(await page.locator('.wc-pin').count(),59);
  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.locator('[data-event="daily"] [name="hours"]').fill('16');await page.getByRole('button',{name:'Save schedule',exact:true}).click();
  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('state')).events.find(e=>e.id==='daily').hours[0]===16);
+ // Preview must not save or alter cube progress; explicit application survives reload.
+ await page.getByRole('button',{name:'Load Global preset',exact:true}).click();
+ assert.equal(await page.locator('[data-event="daily"] [name="hours"]').inputValue(),'7');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('state')).events.find(e=>e.id==='daily').hours[0]),16);
+ await page.getByRole('button',{name:'Save schedule',exact:true}).click();
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('state')).events.find(e=>e.id==='daily').hours[0]===7);
+ await page.reload();await page.getByRole('button',{name:'Settings',exact:true}).click();
+ assert.equal(await page.locator('[data-event="shugo"] [name="entryDuration"]').inputValue(),'3');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('state')).profiles['Nezekan · Elyos'].verteron_A),true);
  const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Export backup',exact:true}).click();const download=await downloadPromise;assert.equal(download.suggestedFilename(),'ratmeter-companion-backup.json');
  await page.locator('.wc-import-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"version":9}')});await page.waitForFunction(()=>document.querySelector('.wc-save-status').textContent.startsWith('Import failed'));
  assert.deepEqual(errors,[]);
