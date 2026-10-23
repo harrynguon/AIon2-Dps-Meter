@@ -1,7 +1,7 @@
 # Handoff — 2026-10-23
 
 Fork: https://github.com/harrynguon/AIon2-Dps-Meter (default branch master).
-PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/1 (feature/world-companion) was squash-merged into master as b4740c5; the original commits stay on that branch and the PR. Game-terms documentation: branch docs/game-terms-risk, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/2. Native window lifecycle check: branch test/window-lifecycle-harness, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/3 (open, awaiting the player's go-ahead). The newest dated section below has the latest checks.
+PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/1 (feature/world-companion) was squash-merged into master as b4740c5; the original commits stay on that branch and the PR. Game-terms documentation: branch docs/game-terms-risk, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/2. Native window lifecycle check: PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/3 (test/window-lifecycle-harness) was squash-merged into master as d8f16be; the original commits stay on that branch and the PR. The newest dated section below has the latest checks.
 
 ## Completed
 
@@ -82,4 +82,4 @@ Unlike the earlier harness, it drives the page through CoreWebView2 script execu
 
 The existing DeferredWindowCloseTests ran the gate on the thread pool. There, the deferred turn could run before MarkClosed, so ForcedCloseBeforeReleaseSkipsReleaseAndClose failed depending on timing. Here it failed in one full `dotnet test` run and in 40/40 runs of the class on its own. The auditor saw it fail in 29/30 runs of that test on its own, but pass in 40/40 class runs and 10/10 full-suite runs; CI passed. The tests now run on a WPF dispatcher thread, as in a window. Production close code is unchanged.
 
-CI passed on windows-latest with the new step (PR run 39906262990), and a pr-auditor review approved with nits, which are addressed (see WORKLOG.md). Still not covered: the integrated meter with capture and combat, ◈ from both layouts, real Alt+F4 keyboard input, a ◈ click during close teardown, the published single-file layout, and whether components are actually disposed (the check does not assert it). The in-game acceptance checklist above is unchanged.
+CI passed on windows-latest with the new step (PR run 39906262990), and a pr-auditor review approved with nits, which are addressed (see WORKLOG.md). With the player's go-ahead it was squash-merged as d8f16be after PR CI passed on the final head 3a1110d (run 39907889988); master's push CI for d8f16be (run 39908137289) also passed. Still not covered: the integrated meter with capture and combat, ◈ from both layouts, real Alt+F4 keyboard input, a ◈ click during close teardown, the published single-file layout, and whether components are actually disposed (the check does not assert it). The in-game acceptance checklist above is unchanged.

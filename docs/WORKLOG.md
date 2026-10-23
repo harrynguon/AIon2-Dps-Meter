@@ -72,3 +72,7 @@ A pr-auditor review of PR #3 at d8a28ac approved with nits. It re-ran every chec
 - Purpose comments for the remaining helpers, and the HANDOFF superseded marker clarified.
 
 Open: the integrated meter with capture/combat, ◈ and real Alt+F4 input remain manual (LIVE-TESTING.md step 5); the check does not assert component disposal. Next: the player's go-ahead to squash-merge PR #3.
+
+## 2026-10-23 — Lifecycle check merged
+
+With the player's go-ahead, squash-merged PR #3 into master as d8f16be, pinned to the reviewed head 3a1110d (same tree). Before merging, PR CI on 3a1110d (run 39907889988) passed every step, including the lifecycle check (PASS, 4 companions); the branch push run and master's push CI for d8f16be (run 39908137289) passed afterwards. Updated HANDOFF.md, which still described PR #3 as open. Documentation only; no tests rerun. Open: in-game acceptance (HANDOFF checklist, LIVE-TESTING.md step 5). Next: the player tests the merged build in the integrated meter.
