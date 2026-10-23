@@ -43,6 +43,7 @@ namespace AionDpsMeter.UI
                     services.AddCombatHistoryPersistence("combat-history.db");
                    
                     services.AddSingleton<IAppSettingsService, AppSettingsService>();
+                    services.AddCompanionStore(CompanionStore.DefaultDirectory);
                     services.AddSingleton<UpdateCheckerService>();
                     services.AddSingleton<FilePacketWriter>();
                     services.AddSingleton<TcpStreamBuffer>();

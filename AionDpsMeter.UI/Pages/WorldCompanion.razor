@@ -1,10 +1,11 @@
 @using Microsoft.JSInterop
-@using System.IO
 @using AionDpsMeter.Core.Windowing
 @using AionDpsMeter.Services.Services.Settings
 @using AionDpsMeter.UI.Services.Windowing
 @inject IJSRuntime JS
 @inject IWindowManagerService Windows
+@* One store for every companion window (AddCompanionStore): the per-user default in the meter, a scratch directory in checks. *@
+@inject CompanionStore Store
 @implements IAsyncDisposable
 
 <link rel="stylesheet" href="companion/companion.css" />
@@ -22,9 +23,6 @@
     private string? error;
     private bool disposed;
     private static readonly TimeSpan JsTeardownLimit = TimeSpan.FromSeconds(2);
-    private static readonly CompanionStore Store = new(Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "HarryNguon", "RATmeter", "WorldCompanion"));
 
     // Startup that finishes after disposal sends nothing further: the page is torn down with its window.
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Native window lifecycle check for the World Companion: hosts the real BlazorWindow off-screen in a
+       long-lived WPF application and fails on any unhandled UI-dispatcher exception. Run it; see docs/DEVELOPMENT.md. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.20348.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AionDpsMeter.UI\AionDpsMeter.UI.csproj" />
+    <!-- Shared default-settings double, linked so the check does not reference the xUnit test application. -->
+    <Compile Include="..\AionDpsMeter.Tests\TestAppSettingsService.cs" Link="TestAppSettingsService.cs" />
+  </ItemGroup>
+
+  <!-- BlazorWebView finds development-time web assets through <entry assembly>.staticwebassets.runtime.json.
+       The UI's manifest, copied here with the UI's output, maps wwwroot and blazor.webview.js exactly as when
+       debugging the meter, so the check serves this checkout's companion files without copying them. -->
+  <Target Name="UseUiStaticWebAssets" AfterTargets="Build">
+    <Copy SourceFiles="$(OutDir)AionDpsMeter.UI.staticwebassets.runtime.json"
+          DestinationFiles="$(OutDir)$(AssemblyName).staticwebassets.runtime.json"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

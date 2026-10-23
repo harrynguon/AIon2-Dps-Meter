@@ -1,6 +1,7 @@
 using AionDpsMeter.Services.PacketProcessing;
 using AionDpsMeter.Services.PacketProcessing.Routing;
 using AionDpsMeter.Services.Services.Session.Persistence;
+using AionDpsMeter.Services.Services.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +26,18 @@ namespace AionDpsMeter.Services.Extensions
                 });
 
                 services.AddSingleton<ICombatHistoryStore, CombatHistoryStore>();
+                return services;
+            }
+
+            /// <summary>
+            /// Registers the one companion store shared by every companion window. The meter passes
+            /// CompanionStore.DefaultDirectory; checks pass a scratch directory so a player's saves are never touched.
+            /// The store (and its absolute-path validation) is created when a companion first opens, so a bad
+            /// location affects only the companion, not meter startup.
+            /// </summary>
+            public IServiceCollection AddCompanionStore(string directory)
+            {
+                services.AddSingleton(_ => new CompanionStore(directory));
                 return services;
             }
 

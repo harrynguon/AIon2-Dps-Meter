@@ -12,6 +12,14 @@ public sealed class CompanionStore
     /// </summary>
     public const int SchemaVersion = 2;
 
+    /// <summary>
+    /// Per-user directory the meter stores companion settings in. Existing saves live here, so it must not change;
+    /// tests and native checks pass their own scratch directory instead.
+    /// </summary>
+    public static string DefaultDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "HarryNguon", "RATmeter", "WorldCompanion");
+
     private readonly string path;
     private readonly Lock gate = new();
 

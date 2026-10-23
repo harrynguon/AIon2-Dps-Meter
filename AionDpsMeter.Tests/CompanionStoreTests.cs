@@ -1,4 +1,6 @@
+using AionDpsMeter.Services.Extensions;
 using AionDpsMeter.Services.Services.Settings;
+using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 
 namespace AionDpsMeter.Tests;
@@ -55,6 +57,30 @@ public sealed class CompanionStoreTests : IDisposable
     public void StorageRejectsWorkingDirectoryDependentPaths()
     {
         Assert.Throws<ArgumentException>(() => new CompanionStore("data"));
+    }
+    [Fact]
+    public void DefaultDirectoryKeepsTheExistingPerUserLocation()
+    {
+        // Players' saves already live here; moving it would silently start them from defaults.
+        var root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        Assert.True(Path.IsPathFullyQualified(CompanionStore.DefaultDirectory));
+        Assert.Equal(Path.Combine(root, "HarryNguon", "RATmeter", "WorldCompanion"), CompanionStore.DefaultDirectory);
+    }
+    [Fact]
+    public void RegistrationSharesOneStoreRootedInTheGivenDirectory()
+    {
+        using var provider = new ServiceCollection().AddCompanionStore(directory).BuildServiceProvider();
+        var store = provider.GetRequiredService<CompanionStore>();
+        Assert.Same(store, provider.GetRequiredService<CompanionStore>());
+        store.Save("{\"version\":" + CompanionStore.SchemaVersion + "}");
+        Assert.True(File.Exists(Path.Combine(directory, "companion.json")));
+    }
+    [Fact]
+    public void RegistrationDefersPathValidationUntilTheCompanionOpens()
+    {
+        // A bad location must not stop the meter from building its services.
+        using var provider = new ServiceCollection().AddCompanionStore("data").BuildServiceProvider();
+        Assert.Throws<ArgumentException>(() => provider.GetRequiredService<CompanionStore>());
     }
     public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
 }
