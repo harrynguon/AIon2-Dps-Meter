@@ -23,7 +23,7 @@ Record tested commit, observation date and relevant Windows/display configuratio
 
 ## Schedule evidence needed
 
-Target: Global Asia / Nezekan / Elyos. Screenshot evidence received 2026-10-23 shows ST 09:22, LT 11:22, and a per-server daily completion reset countdown of 6h 37m. This supports approximately 16:00 server / 18:00 Sydney AEDT, consistent with the Global preset (07:00 UTC). Minute precision and screenshot timing explain the approximately one-minute difference. This verifies the displayed daily-completion countdown, not every daily system or an observed reset transition. The two-hour clock difference is consistent with UTC+9 given Sydney AEDT; screenshots alone do not identify an absolute timezone. Weekly tally remains unverified. Legacy saved rules may still use 09:00 server until the preset is explicitly applied.
+Target: Global Asia / Nezekan / Elyos. Screenshot evidence received 2026-10-23 shows ST 09:22, LT 11:22, and a per-server daily completion reset countdown of 6h 37m. This supports approximately 16:00 server / 18:00 Sydney AEDT, consistent with the Global preset (07:00 UTC). Minute precision and screenshot timing explain the approximately one-minute difference. This verifies the displayed daily-completion countdown, not every daily system or an observed reset transition. The two-hour clock difference is consistent with UTC+9 given Sydney AEDT; screenshots alone do not identify an absolute timezone. The player subsequently confirmed weekly reset at Wednesday 18:00 Melbourne time; see the confirmation below. Legacy saved rules may still use 09:00 server until the preset is explicitly applied.
 
 Record each event's date, exact server time, UTC time, local timezone, phase, and whether evidence is a calendar countdown or actual observation. Observe consecutive rift openings; verify weekly tally independently. Do not include account identifiers. Correct defaults and regression tests once verified, explicitly preserving existing user customizations. Settings permit manual corrections now.
 
@@ -42,3 +42,7 @@ New installations use the source-based Global preset. Existing saves retain ever
 ## Rift observation — 2026-10-23
 
 At the displayed 09:22 server time, the player tentatively recalled a rift about 1h 22m earlier. That implies 08:00 server and agrees with the Global preset. It is not an exact observed opening or proof of the three-hour recurrence. The next predicted opening after this screenshot is 11:00 server / 13:00 Sydney AEDT, about 1h 38m later. Verify entry closure separately (preset: 11:10 server). No schedule code or saved settings were changed from this observation. Screenshots are not committed; only non-identifying clock/countdown readings are recorded.
+
+## Weekly reset confirmation — 2026-10-23
+
+The player explicitly confirmed weekly reset at Wednesday 18:00 Melbourne time. During AEDT (UTC+11), this is Wednesday 07:00 UTC / 16:00 Asia server time, matching the implemented Global preset. Evidence type: confident user report, not an observed transition or screenshot. Behaviour outside daylight saving remains unverified: a fixed 07:00 UTC reset displays as 17:00 Melbourne AEST. Do not change the preset to a Melbourne-local recurrence without evidence that the game reset follows Australian daylight saving. No code or saved settings changed.

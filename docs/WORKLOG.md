@@ -25,3 +25,7 @@ Added reusable presets.mjs, explicit preview/apply UI, new-install Global defaul
 ## 2026-10-23 — First in-game schedule evidence
 
 Recorded screenshot readings ST 09:22 / LT 11:22 and daily-completion reset in 6h 37m. These support the Global preset's 16:00 Asia server / 18:00 Sydney AEDT reset within minute precision. Kept tentative recollection of an 08:00 rift distinct from screenshot evidence. Weekly tally, exact rift opening/closure and combat acceptance remain pending. Documentation only; no runtime changes or test rerun required. Next: observe the predicted 11:00 server rift and check cube persistence.
+
+## 2026-10-23 — Weekly reset confirmation
+
+Recorded the player's explicit confirmation of Wednesday 18:00 Melbourne weekly reset. This matches Wednesday 07:00 UTC during AEDT. Marked the evidence as user-reported and retained the unresolved AEST distinction. Documentation only; no runtime change or test rerun needed. Next: rift opening/closure observation and cube/combat acceptance.
