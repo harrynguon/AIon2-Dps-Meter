@@ -21,3 +21,7 @@ Compared pinned A2Tools data, recurrence functions and generator against our tim
 ## 2026-10-23 — Global preset and coding guidance
 
 Added reusable presets.mjs, explicit preview/apply UI, new-install Global defaults, three-minute entry phases, and unknown boss/siege durations. Preserved legacy saves and character progress. Updated AGENTS.md for modular code and concise purpose comments; added LIVE-TESTING.md. Fourteen JS tests and Edge interaction/recovery/preset tests passed. Windows publish completed with existing upstream compiler warnings. Next: user validation of Nezekan clocks, cube persistence and integrated combat.
+
+## 2026-10-23 — First in-game schedule evidence
+
+Recorded screenshot readings ST 09:22 / LT 11:22 and daily-completion reset in 6h 37m. These support the Global preset's 16:00 Asia server / 18:00 Sydney AEDT reset within minute precision. Kept tentative recollection of an 08:00 rift distinct from screenshot evidence. Weekly tally, exact rift opening/closure and combat acceptance remain pending. Documentation only; no runtime changes or test rerun required. Next: observe the predicted 11:00 server rift and check cube persistence.
