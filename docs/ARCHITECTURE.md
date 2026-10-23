@@ -20,7 +20,7 @@ The .NET 10 WPF meter hosts BlazorWebView. The companion is a separate resizable
 
 The fork tracks upstream Kuroukihime/AIon2-Dps-Meter releases. Fork features are kept apart from upstream code, so upstream merges rarely conflict and a feature can move to another meter.
 
-- **Feature module:** `AionDpsMeter.Companion` is a Razor class library (net10.0) that references no project in this repository; `WorldCompanionHostTests` fails if it does. It owns the page, its browser assets (served at `_content/AionDpsMeter.Companion/`) and its store. A host supplies `ICompanionWindow` (drag, close) and calls `AddWorldCompanion(storeDirectory)`.
+- **Feature module:** `AionDpsMeter.Companion` is a Razor class library (net10.0) that references no project in this repository; `WorldCompanionHostTests` fails on a used or declared reference (compiled references and the build's dependency graph). It owns the page, its browser assets (served at `_content/AionDpsMeter.Companion/`) and its store. A host supplies `ICompanionWindow` (drag, close) and calls `AddWorldCompanion(storeDirectory)`.
 - **Host adapter:** `AionDpsMeter.UI/Companion/` holds the meter-specific wiring: the per-user store directory, `ICompanionWindow` backed by the window manager, the launcher and companion-only mode. It may use any meter type.
 - **Upstream seams:** the only fork edits to upstream files. Keep each to a hook and update this list when one is added or removed.
 
@@ -32,10 +32,12 @@ The fork tracks upstream Kuroukihime/AIon2-Dps-Meter releases. Fork features are
 | AionDpsMeter.UI/Pages/MainDpsMinimal.razor, MainDpsStyle2.razor | ◈ button |
 | AionDpsMeter.Core/Windowing/WindowKey.cs | `WorldCompanion` key |
 | AionDpsMeter.UI/AionDpsMeter.UI.csproj, AionDpsMeter.slnx | Companion and lifecycle-check projects |
-| AionDpsMeter.UI/Services/Windowing/BlazorWindow.xaml.cs | Deferred close (generic Blazor-window fix; a candidate to offer upstream) |
+| AionDpsMeter.UI/Services/Windowing/BlazorWindow.xaml.cs | Deferred close, with the added DeferredWindowClose.cs beside it (generic Blazor-window fix that another host also needs; a candidate to offer upstream) |
 | AionDpsMeter.Services/AionDpsMeter.Services.csproj | SQLite bundle override (CVE-2025-6965) |
 | AionDpsMeter.Services/Services/Update/UpdateCheckerService.cs | Update feed points at this fork |
 | README.md, .gitignore, .github/workflows/ci.yml | Fork notice, local build outputs, CI checks |
+
+Fork-owned files also sit in upstream folders without editing upstream code: DeferredWindowClose.cs (above) and the fork's tests in AionDpsMeter.Tests (CompanionStoreTests, DeferredWindowCloseTests, SqliteRuntimeTests, WorldCompanionHostTests). They merge cleanly unless upstream adds a file of the same name.
 
 To reuse the companion in another BlazorWebView meter: reference `AionDpsMeter.Companion`, register an `ICompanionWindow` and `AddWorldCompanion(<absolute directory>)`, and render `WorldCompanion` in a window whose close keeps the WebView alive until components have disposed (see Window lifecycle).
 
@@ -57,7 +59,7 @@ Server offset is fixed; local display follows computer timezone rules. Kaira/rif
 
 ## Persistence
 
-Razor loads JSON through CompanionStore; JS validates using the import schema and canonical event metadata. Saved state is version 2: server offset and nine event rules. Version 1 (cube-era) files still load; their timer rules are kept and retired map/profile fields are dropped without validation. CompanionStore writes only the current version (SchemaVersion), so state.mjs and the store must change together. Writes are queued. CompanionStore.DefaultDirectory resolves the absolute directory HarryNguon/RATmeter/WorldCompanion under platform LocalApplicationData, containing companion.json and preceding-save companion.json.bak. App registers one store for that directory through AddCompanionStore and WorldCompanion injects it; checks register a scratch directory instead. Original DPS settings/history remain separate.
+Razor loads JSON through CompanionStore; JS validates using the import schema and canonical event metadata. Saved state is version 2: server offset and nine event rules. Version 1 (cube-era) files still load; their timer rules are kept and retired map/profile fields are dropped without validation. CompanionStore writes only the current version (SchemaVersion), so state.mjs and the store must change together. Writes are queued. WorldCompanionHost.DefaultStoreDirectory resolves the absolute directory HarryNguon/RATmeter/WorldCompanion under platform LocalApplicationData, containing companion.json and preceding-save companion.json.bak. The meter registers one store for that directory through AddWorldCompanionHost (which calls the module's AddWorldCompanion) and WorldCompanion injects it; checks register a scratch directory instead. Original DPS settings/history remain separate.
 
 Unreadable/invalid saves trigger temporary defaults with writes blocked. Recovery permits original-text export when readable, validated import or explicit Start fresh. Disk failures remain visible and subsequent saves can retry. Imports/files are bounded at 2 MB.
 

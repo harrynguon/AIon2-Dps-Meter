@@ -18,6 +18,10 @@ This is a fork of Kuroukihime/AIon2-Dps-Meter. Merge only upstream releases (ups
 - Keep fixes to upstream behaviour minimal and generic, and note them as candidates to offer upstream.
 - Guard each module's independence with a test, as WorldCompanionHostTests does.
 
+## Review and merge
+
+Changes reach master through a PR and a squash merge, after CI passes and with the player's go-ahead. Docs-only changes (Markdown only) need no audit. Otherwise run the pr-auditor agent (.claude/agents/pr-auditor.md): a standard pass by default, or ask for a deep pass, at high effort, when the change touches window lifecycle or WebView2 hosting, threading, saved data, validation or security, packet capture or parsing, or package versions. Address its findings before merging; small fixes that apply its own suggestions need no second audit.
+
 ## Structure and comments
 
 Write modular, reusable code with focused responsibilities. Keep schedule rules/calculation, validation, storage and UI separate. Prefer shared helpers over duplication. Briefly comment each new or changed module and function with its purpose, and explain non-obvious behavior or invariants without narrating every statement. Keep comments current. Add appropriate boundary/compatibility tests and maintain documentation as work proceeds.

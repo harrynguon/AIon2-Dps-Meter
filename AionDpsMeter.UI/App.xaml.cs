@@ -74,11 +74,7 @@ namespace AionDpsMeter.UI
         {
             await AppHost.StartAsync();
 
-            if (TryStartCompanionOnly(e))
-            {
-                base.OnStartup(e);
-                return;
-            }
+            if (TryStartCompanionOnly(e)) return;
 
             _ = AppHost.Services.GetRequiredService<ICombatHistoryStore>();
 
@@ -94,11 +90,7 @@ namespace AionDpsMeter.UI
         {
             try
             {
-                if (await TryExitCompanionOnlyAsync())
-                {
-                    base.OnExit(e);
-                    return;
-                }
+                if (await TryExitCompanionOnlyAsync(e)) return;
                 var sessionManager = AppHost.Services.GetRequiredService<CombatSessionManager>();
                 var historyStore = AppHost.Services.GetRequiredService<ICombatHistoryStore>();
                 sessionManager.CompleteAndPersistActiveSessions();

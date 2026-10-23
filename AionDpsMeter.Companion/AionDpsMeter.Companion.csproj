@@ -8,6 +8,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Pinned because WorldCompanion.razor hard-codes these URLs; the SDK default follows PackageId. -->
+    <StaticWebAssetBasePath>_content/AionDpsMeter.Companion</StaticWebAssetBasePath>
   </PropertyGroup>
 
   <ItemGroup>

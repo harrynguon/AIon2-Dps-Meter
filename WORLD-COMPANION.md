@@ -64,9 +64,9 @@ before distributing a public binary. Game artwork remains its respective owners'
 
 ## Validation of this implementation
 
-- Full .NET suite: 25 passing tests, including durable settings storage and its unchanged
-  location, cube-era save compatibility, companion window close ordering and the native
-  SQLite version.
+- Full .NET suite: 28 passing tests, including durable settings storage and its unchanged
+  location, cube-era save compatibility, companion window close ordering, the companion
+  module's independence from meter projects and the native SQLite version.
 - Schedule/state tests: 12 passing tests, including weekly/year rollover, fractional
   server offsets, UTC invariance, simultaneous events, exact rift phase boundaries and
   cube-era migration.

@@ -5,7 +5,7 @@ namespace AionDpsMeter.Companion;
 
 /// <summary>
 /// Companion settings file, independent of the host's own settings, history and updates. The host chooses
-/// the directory (the meter's default is WorldCompanionHost.DefaultStoreDirectory).
+/// the directory through AddWorldCompanion.
 /// </summary>
 public sealed class CompanionStore
 {

@@ -15,26 +15,28 @@ public partial class App
         services.AddWorldCompanionHost(WorldCompanionHost.DefaultStoreDirectory);
 
     /// <summary>
-    /// With --world-companion, opens only the companion (no packet capture or meter windows) and returns true;
-    /// the application then exits when the companion closes.
+    /// With --world-companion, opens only the companion (no packet capture or meter windows), completes
+    /// startup and returns true; the application then exits when the companion closes.
     /// </summary>
     private bool TryStartCompanionOnly(StartupEventArgs e)
     {
         companionOnly = e.Args.Contains("--world-companion");
-        if (companionOnly)
-            AppHost.Services.GetRequiredService<WorldCompanionLauncher>().Open();
-        return companionOnly;
+        if (!companionOnly) return false;
+        AppHost.Services.GetRequiredService<WorldCompanionLauncher>().Open();
+        base.OnStartup(e);
+        return true;
     }
 
     /// <summary>
     /// In companion-only mode, stops the host without the combat-history shutdown work, which was never
-    /// started, and returns true.
+    /// started, completes exit and returns true. A failure propagates to OnExit's catch, which completes exit.
     /// </summary>
-    private async Task<bool> TryExitCompanionOnlyAsync()
+    private async Task<bool> TryExitCompanionOnlyAsync(ExitEventArgs e)
     {
         if (!companionOnly) return false;
         await AppHost.StopAsync();
         await Log.CloseAndFlushAsync();
+        base.OnExit(e);
         return true;
     }
 }

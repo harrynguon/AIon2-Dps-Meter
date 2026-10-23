@@ -21,7 +21,7 @@
     private string? error;
     private bool disposed;
     private static readonly TimeSpan JsTeardownLimit = TimeSpan.FromSeconds(2);
-    // Razor class library assets are served under _content/<assembly name>/ by every BlazorWebView host.
+    // Must match StaticWebAssetBasePath in AionDpsMeter.Companion.csproj (also used by the stylesheet link above).
     private const string ModuleScript = "./_content/AionDpsMeter.Companion/companion.mjs";
 
     // Startup that finishes after disposal sends nothing further: the page is torn down with its window.

@@ -39,6 +39,7 @@ public static class WorldCompanionHost
 /// <summary>Companion window operations backed by the meter's window manager.</summary>
 internal sealed class CompanionWindowActions(IWindowManagerService windows) : ICompanionWindow
 {
+    // Native drag of the companion window from the page's Move button.
     public void Drag() => windows.Drag(WindowKey.WorldCompanion);
 
     // BlazorWindow defers the actual teardown until this JS-initiated call has replied.
