@@ -1,49 +1,36 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {defaults} from '../AionDpsMeter.UI/wwwroot/companion/schedule.mjs';
 import {initialState,validateState} from '../AionDpsMeter.UI/wwwroot/companion/state.mjs';
 
-const catalog=JSON.parse(await readFile(new URL('../AionDpsMeter.UI/wwwroot/companion/cubes.json',import.meta.url)));
-
-test('valid saved progress survives validation without shared mutable references',()=>{
-  const input=initialState();input.profiles[input.profile].verteron_A=true;
-  const output=validateState(input,catalog);assert.deepEqual(output,input);
-  output.profiles[output.profile].verteron_A=false;
-  output.events[0].hours.push(23);
-  assert.equal(input.profiles[input.profile].verteron_A,true);assert.ok(!input.events[0].hours.includes(23));
+test('timer-only state survives validation without shared mutable references',()=>{
+  const input=initialState();
+  const output=validateState(input);assert.deepEqual(output,input);assert.equal(output.version,2);
+  output.events[0].hours.push(23);assert.ok(!input.events[0].hours.includes(23));
 });
 
-test('corrupt profile shapes cannot reach the cube UI',()=>{
-  for(const progress of [null,[],42,'done',{'not-a-cube':true},{verteron_A:'true'}]){
-    const input=initialState();input.profiles[input.profile]=progress;
-    assert.throws(()=>validateState(input,catalog));
-  }
-  for(const change of [{profile:'missing'},{zone:'constructor'},{profiles:[]},{profiles:{}},{version:2},{offset:Infinity}]){
-    assert.throws(()=>validateState({...initialState(),...change},catalog));
-  }
+// Cube-era (version 1) saves keep their timer rules; retired cube fields are dropped, not validated.
+test('cube-era saves migrate with legacy custom schedules intact',()=>{
+  const old={version:1,offset:9,profile:'Example',zone:'verteron',profiles:{Example:{verteron_A:true}},events:structuredClone(defaults)};
+  old.events.find(e=>e.id==='daily').hours=[18];
+  const clean=validateState(old);
+  assert.deepEqual(clean,{version:2,offset:9,events:old.events.map(e=>({...e}))});
+  assert.equal(clean.events.find(e=>e.id==='daily').hours[0],18);
+  // Retired fields are not inspected, so old or corrupt cube progress cannot block the timers.
+  assert.equal(validateState({...old,profiles:null,zone:'unknown'}).version,2);
 });
 
-test('reserved profile names and missing rift duration are rejected',()=>{
-  for(const name of ['__proto__','constructor','prototype','', 'a'.repeat(101)]){
-    const input=initialState();input.profile=name;input.profiles=JSON.parse(`{${JSON.stringify(name)}:{}}`);
-    assert.throws(()=>validateState(input,catalog));
-  }
+test('malformed state is rejected for fail-closed recovery',()=>{
+  for(const change of [{version:0},{version:3},{version:'2'},{offset:Infinity},{offset:-13},{offset:15},{events:null}])
+    assert.throws(()=>validateState({...initialState(),...change}));
+  assert.throws(()=>validateState(null));
   const input=initialState();delete input.events.find(e=>e.id==='rift').activeDuration;
-  assert.throws(()=>validateState(input,catalog));
+  assert.throws(()=>validateState(input));
 });
 
 test('backup schedule values cannot change event identity or metadata',()=>{
   const input=initialState();input.events[0].name='arbitrary';input.events[0].kind='reset';input.events[0].hours=[4,1,1];input.unexpected={anything:true};
-  const clean=validateState(input,catalog);
+  const clean=validateState(input);
   assert.equal(clean.events[0].name,'Watcher Kaira');assert.equal(clean.events[0].kind,'boss');
   assert.deepEqual(clean.events[0].hours,[1,4]);assert.ok(!('unexpected' in clean));
-});
-
-// Loading old custom schedules must not silently apply the new preset.
-test('legacy custom schedules and new entry windows survive round trips',async()=>{
-  const {defaults}=await import('../AionDpsMeter.UI/wwwroot/companion/schedule.mjs');
-  const old=initialState();old.events=structuredClone(defaults);old.events.find(e=>e.id==='daily').hours=[18];old.profiles[old.profile].verteron_A=true;
-  assert.deepEqual(validateState(old,catalog),old);
-  const fresh=initialState();assert.deepEqual(validateState(fresh,catalog),fresh);
-  assert.equal(fresh.events.find(e=>e.id==='shugo').entryDuration,3);
 });

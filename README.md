@@ -1,4 +1,4 @@
-> **World Companion fork:** open **◈** in the DPS header for schedules and offline cube maps. See [WORLD-COMPANION.md](WORLD-COMPANION.md) for setup, schedule caveats, backups and tests.
+> **World Companion fork:** open **◈** in the DPS header for world event schedules and reset timers. See [WORLD-COMPANION.md](WORLD-COMPANION.md) for setup, schedule caveats, backups and tests.
 
 # 🗡️ RATmeter - Aion 2 DPS Meter and Stat Efficiency Calculator
 

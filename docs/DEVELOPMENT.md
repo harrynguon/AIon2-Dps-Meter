@@ -50,3 +50,7 @@ $appPath = Join-Path $publishPath 'AionDpsMeter.UI.exe'
 ```
 
 Retain the entire published folder, including wwwroot. local-build is ignored. Previous native smoke automation was temporary and is not checked in; reproduce checks using HANDOFF.md. Do not add production remote-debugging flags for testing.
+
+## Native window lifecycle check
+
+Companion-only mode exits when its window closes, which hides crashes raised on the UI dispatcher during close. To exercise close/reopen without packet capture, use a temporary harness outside the repository: a WPF console app referencing AionDpsMeter.UI that keeps running with ShutdownMode.OnExplicitShutdown and opens BlazorWindow with WorldCompanion off-screen. Drive the companion close button through WebView2 DevTools, enabled only for that process by setting WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS to --remote-debugging-port=<port> and WEBVIEW2_USER_DATA_FOLDER to an absolute scratch directory. A harness built with the plain Microsoft.NET.Sdk must copy wwwroot/_framework from a published build, and Playwright must reconnect over CDP for each new companion. A pass is: no unhandled exception, the process stays alive after each close, and exit code 0 after shutdown with a companion open. The harness reads the real companion settings file; opening and closing alone never write it.

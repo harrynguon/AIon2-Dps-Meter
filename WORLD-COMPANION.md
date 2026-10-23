@@ -1,9 +1,9 @@
 # World Companion fork
 
-This fork adds the selected world schedule and hidden cube features to RATmeter.
+This fork adds selected world event schedules to RATmeter.
 Open **◈ World Companion** in either DPS display style. The companion is a separate,
 resizable, always-on-top window. Use **Move** to drag it; close it without closing the meter.
-You can also run `AionDpsMeter.UI.exe --world-companion` to use maps/timers offline
+You can also run `AionDpsMeter.UI.exe --world-companion` to use the timers
 without starting packet capture.
 
 ## Included
@@ -13,10 +13,12 @@ without starting packet capture.
 - Next Up banner with scheduled activity, location, local/server time and countdown.
 - Rift entry-open and entry-closed activity phases. Upcoming progress fills over the
   final hour; active progress shows elapsed window time.
-- Verteron and Altgard offline maps, all 154 groups and 2,811 candidate spots.
-- Map selection, candidate spot dots, cursor-centred wheel zoom, drag, fit and zoom controls.
-- Landmark/group search, hide-found filter, synchronised map/checklist completion.
-- Separate character profiles, durable local storage, backup export/import.
+- Editable schedule rules and server clock, the Global preset, durable local storage,
+  backup export/import.
+
+The hidden cube tracker (maps, cube catalog and per-character progress) was removed on
+2026-10-23 at the player's request. Settings saved by earlier builds still load; their
+timer rules are kept and cube progress is no longer read or written.
 
 ## Schedule accuracy
 
@@ -35,9 +37,10 @@ saving, change the server offset when necessary.
 
 ## Persistence and updates
 
-Progress is stored at `%LOCALAPPDATA%\HarryNguon\RATmeter\WorldCompanion\companion.json`.
-The preceding save is retained as `companion.json.bak`. Use Export for long-term backups.
-The original DPS settings and combat database are not used to store companion progress.
+Settings are stored at `%LOCALAPPDATA%\HarryNguon\RATmeter\WorldCompanion\companion.json`.
+The preceding save is retained as `companion.json.bak`; the first save after upgrading
+therefore keeps the last cube-era file there until the next save. Use Export for long-term backups.
+The original DPS settings and combat database are not used to store companion settings.
 Updates now check `harrynguon/AIon2-Dps-Meter`, so accepting an upstream release
 cannot silently replace the fork. No fork release has been published by this change.
 
@@ -48,25 +51,28 @@ See the [maintainer documentation](docs/README.md) for setup, build/test command
 ## Attribution
 
 Original meter: Kuroukihime/AIon2-Dps-Meter, GPLv3 (see LICENSE).
-Cube coordinates and maps: Byanski/aion2timeroverlay at
+Schedule defaults are adapted from Byanski/aion2timeroverlay at
 `2a5727ecdf5487e9becb6b3a756819f9d14ff564`, whose package.json declares MIT.
-Its README describes this as a Corpus.gg companion. Schedule defaults are adapted
-from the same source. The new UI and schedule implementation are written for this fork.
+Its README describes this as a Corpus.gg companion. Earlier commits of this fork also
+bundled that repository's cube coordinates and maps; they are no longer in the
+working tree but remain in Git history. The new UI and schedule implementation are written for this fork.
 The source repository does not include a standalone MIT licence text or a separate
-map/data grant. Preserve this provenance; confirm third-party map/data redistribution
-terms before distributing a public binary. Game artwork remains its respective owners'.
+map/data grant. Preserve this provenance; see [security and provenance](docs/SECURITY.md)
+before distributing a public binary. Game artwork remains its respective owners'.
 
 ## Validation of this implementation
 
-- Full .NET suite: 15 passing tests (including durable progress storage and the native SQLite version).
-- Schedule/data/state tests: 12 passing tests, including weekly/year rollover, fractional
-  server offsets, UTC invariance, simultaneous events and exact rift phase boundaries.
-- Headless Edge interaction checks: maps, pins, inspector/checklist synchronisation,
-  search, zoom, persistence/reload, independent profiles, schedule editing, export,
-  invalid import and disposal.
-- Published Windows executable tested through its actual WebView2 host in
-  companion-only mode: JS/.NET initialization, local maps/data, tabs, inspector,
-  settings and close.
+- Full .NET suite: 21 passing tests, including durable settings storage, cube-era save
+  compatibility, companion window close ordering and the native SQLite version.
+- Schedule/state tests: 12 passing tests, including weekly/year rollover, fractional
+  server offsets, UTC invariance, simultaneous events, exact rift phase boundaries and
+  cube-era migration.
+- Headless Edge interaction checks: timers, preset preview/apply, save/reload, export,
+  invalid import, recovery, save retry and disposal, with the native save-version rule mirrored.
+- Native WebView2 window lifecycle: a temporary off-screen harness reproduced the
+  reported close crash on the previous code and showed three clean open/close cycles plus
+  shutdown with the companion open on the fixed code. The published executable opened,
+  rendered and closed cleanly in companion-only mode.
 - In-game combat and Nezekan schedule correctness have not been validated.
 - The legacy SQLite bundle was replaced with `SQLitePCLRaw.bundle_e_sqlite3` 3.0.5
   to remove the dependency affected by CVE-2025-6965 / GHSA-2m69-gcr7-jv3q.
@@ -76,9 +82,9 @@ terms before distributing a public binary. Game artwork remains its respective o
 
 ## Recovery and security
 
-Saved files and imported backups use one strict schema check. Invalid profiles,
-unknown cube IDs, non-boolean completion values, invalid clock rules and oversized
-files are rejected. Metadata such as event names is restored from the built-in catalog.
+Saved files and imported backups use one strict schema check. Unsupported versions,
+invalid clock rules and oversized files are rejected. Metadata such as event names is
+restored from the built-in catalog; unknown fields are discarded.
 If saved data cannot be read, the app runs with temporary defaults and blocks writes
 to the original file. Export the original for recovery, import a valid backup, or
 explicitly choose Start fresh. No credentials or game authentication data are needed.
@@ -94,4 +100,4 @@ daily reset countdown and rift opening should be checked directly in-game.
 
 ## Global preset implemented — 2026-10-23
 
-New installations use the source-based Global preset. Existing saves retain every custom rule and cube profile. In Settings, Load Global preset previews rules; Save schedule applies them. The server offset stays under user control (Asia: +9). Daily/Wednesday reset is 07:00 UTC. Rifts start at server 02:00 every three hours with a ten-minute portal window; no unsupported sixty-minute activity window is assumed. Shugo/Invasion have three-minute entry windows and seven/thirteen-minute total activity. Entry-close countdowns switch to remaining activity after closure. Boss/siege end times are unknown and do not generate an assumed active window. Live Nezekan verification remains pending.
+New installations use the source-based Global preset. Existing saves retain every custom rule. In Settings, Load Global preset previews rules; Save schedule applies them. The server offset stays under user control (Asia: +9). Daily/Wednesday reset is 07:00 UTC. Rifts start at server 02:00 every three hours with a ten-minute portal window; no unsupported sixty-minute activity window is assumed. Shugo/Invasion have three-minute entry windows and seven/thirteen-minute total activity. Entry-close countdowns switch to remaining activity after closure. Boss/siege end times are unknown and do not generate an assumed active window. Live Nezekan verification remains pending.

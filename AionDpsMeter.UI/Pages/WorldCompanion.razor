@@ -25,21 +25,22 @@
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "HarryNguon", "RATmeter", "WorldCompanion"));
 
+    // Startup that finishes after disposal sends nothing further: the page is torn down with its window.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
         try
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./companion/companion.mjs");
-            if (disposed) { await module.DisposeAsync(); return; }
+            if (disposed) return;
             reference = DotNetObjectReference.Create(this);
             instance = await module.InvokeAsync<IJSObjectReference>("mount", root, reference);
-            if (disposed) await ReleaseAsync();
         }
-        catch (Exception ex) when (ex is JSException or InvalidOperationException)
+        catch (Exception ex) when (IsInteropFailure(ex))
         {
+            if (disposed) return;
             error = "Unable to open World Companion. Close and reopen it. " + ex.Message;
-            if (!disposed) StateHasChanged();
+            StateHasChanged();
         }
     }
 
@@ -48,24 +49,37 @@
     [JSInvokable] public void Drag() => Windows.Drag(WindowKey.WorldCompanion);
     [JSInvokable] public void Close() => Windows.Close(WindowKey.WorldCompanion);
 
+    // Any unhandled component exception is fatal to the BlazorWebView host, so interop failures are contained here.
+    private static bool IsInteropFailure(Exception ex) =>
+        ex is JSException or JSDisconnectedException or OperationCanceledException
+            or ObjectDisposedException or InvalidOperationException;
+
+    // BlazorWindow keeps the WebView alive until this completes. A page that fails or does not answer
+    // in time is abandoned without further messages; it is destroyed with the window.
     private async ValueTask ReleaseAsync()
     {
         try
         {
             if (instance is not null)
             {
-                await instance.InvokeVoidAsync("dispose");
+                await instance.InvokeVoidAsync("dispose", TimeSpan.FromSeconds(2));
                 await instance.DisposeAsync();
-                instance = null;
             }
-            if (module is not null) { await module.DisposeAsync(); module = null; }
+            if (module is not null) await module.DisposeAsync();
         }
-        catch (Exception ex) when (ex is JSDisconnectedException or ObjectDisposedException or InvalidOperationException) { }
-        finally { reference?.Dispose(); reference = null; }
+        catch (Exception ex) when (IsInteropFailure(ex)) { }
+        finally
+        {
+            instance = null;
+            module = null;
+            reference?.Dispose();
+            reference = null;
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (disposed) return;
         disposed = true;
         await ReleaseAsync();
     }

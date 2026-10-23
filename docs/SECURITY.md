@@ -12,4 +12,6 @@ Original meter: https://github.com/Kuroukihime/AIon2-Dps-Meter at 57974f81fd64df
 
 Schedule references, coordinates and maps: https://github.com/Byanski/aion2timeroverlay at 2a5727ecdf5487e9becb6b3a756819f9d14ff564. Its package.json declares MIT, but the snapshot contains no standalone MIT text or separate map/data grant. Its README describes a Corpus.gg companion. Third-party artwork provenance is not established by that package declaration alone. The integrated UI/recurrence implementation was written for this fork.
 
-Confirm third-party map/data redistribution terms before a public binary release. Record supporting evidence here when resolved. No public binary release has been published at this baseline.
+The cube coordinates (cubes.json) and both maps were removed from the working tree on 2026-10-23 when the cube tracker was retired. They remain in Git history (5432b80 through 5c5c98a) and therefore in the pushed fork; removal does not resolve their provenance. A binary built from the current tree no longer contains them, but schedule defaults are still adapted from the same source.
+
+Confirm third-party redistribution terms (schedule data; maps/coordinates if history is redistributed) before a public binary release. Record supporting evidence here when resolved. No public binary release has been published at this baseline.

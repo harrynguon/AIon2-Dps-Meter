@@ -1,6 +1,8 @@
 using System;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Serilog;
 
 namespace AionDpsMeter.UI.Services.Windowing
 {
@@ -9,6 +11,7 @@ namespace AionDpsMeter.UI.Services.Windowing
     /// Identical shape/behavior to the original hand-written SettingsWindow.xaml —
     /// same init order (InitializeComponent, then RootComponents, then Services) —
     /// just parameterized so you don't need a new .xaml file per Blazor page.
+    /// Closing first disposes the hosted Razor components, then the WebView (see OnClosing).
     ///
     /// Usage (replaces `new SettingsWindow { DataContext = settingsViewModel }`):
     ///
@@ -26,6 +29,8 @@ namespace AionDpsMeter.UI.Services.Windowing
     /// </summary>
     public partial class BlazorWindow : System.Windows.Window
     {
+        private readonly DeferredWindowClose deferredClose;
+
         /// <param name="services">Usually App.AppHost.Services.</param>
         /// <param name="componentType">The Razor page/component to render at #app (e.g. typeof(SettingsPage)).</param>
         /// <param name="hostPage">Override if a page needs a different host HTML file. Defaults to "wwwroot/index.html" (set in XAML).</param>
@@ -47,6 +52,24 @@ namespace AionDpsMeter.UI.Services.Windowing
 
             BlazorWebView.BlazorWebViewInitialized += (_, e) =>
                 e.WebView.DefaultBackgroundColor = System.Drawing.Color.Transparent;
+
+            deferredClose = new DeferredWindowClose(
+                () => BlazorWebView.DisposeAsync(),
+                Close,
+                ex => Log.Warning(ex, "Blazor content disposal failed; closing {Title} anyway.", Title));
+            Closed += (_, _) => deferredClose.MarkClosed();
+        }
+
+        /// <summary>
+        /// Disposes Razor components before WPF tears down the WebView2 control, so their final
+        /// interop messages still reach a live WebView. Closes that cannot be cancelled
+        /// (application shutdown) proceed immediately.
+        /// </summary>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            if (!e.Cancel)
+                e.Cancel = deferredClose.ShouldCancelClose();
         }
     }
 }

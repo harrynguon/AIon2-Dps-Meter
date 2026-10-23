@@ -1,6 +1,5 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
 import {defaults,occurrence,timeline,validateEvents} from '../AionDpsMeter.UI/wwwroot/companion/schedule.mjs';
 const at=s=>Date.parse(s),event=id=>defaults.find(e=>e.id===id);
 test('UTC schedules do not move with the server clock',()=>{
@@ -37,17 +36,6 @@ test('invalid schedule edits are rejected',()=>{
     const events=structuredClone(defaults);Object.assign(events[0],change);assert.throws(()=>validateEvents(events));
   }
   const events=structuredClone(defaults);events.find(e=>e.id==='rift').activeDuration=1;assert.throws(()=>validateEvents(events));
-});
-test('cube catalog is complete with unique IDs and usable coordinates',async()=>{
-  const data=JSON.parse(await readFile(new URL('../AionDpsMeter.UI/wwwroot/companion/cubes.json',import.meta.url)));
-  assert.equal(data.zones.verteron.groups.length,95);assert.equal(data.zones.altgard.groups.length,59);
-  const ids=new Set();let count=0;
-  for(const zone of Object.values(data.zones))for(const group of zone.groups){
-    assert.ok(!ids.has(group.id));ids.add(group.id);
-    for(const p of [group,...group.spots]){assert.ok(p.x>=0&&p.x<=100);assert.ok(p.y>=0&&p.y<=100);}
-    count+=group.spots.length;
-  }
-  assert.equal(count,2811);
 });
 
 // Exercise Global source-based rules without changing legacy-rule regression tests.

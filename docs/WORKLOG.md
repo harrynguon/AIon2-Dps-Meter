@@ -29,3 +29,15 @@ Recorded screenshot readings ST 09:22 / LT 11:22 and daily-completion reset in 6
 ## 2026-10-23 — Weekly reset confirmation
 
 Recorded the player's explicit confirmation of Wednesday 18:00 Melbourne weekly reset. This matches Wednesday 07:00 UTC during AEDT. Marked the evidence as user-reported and retained the unresolved AEST distinction. Documentation only; no runtime change or test rerun needed. Next: rift opening/closure observation and cube/combat acceptance.
+
+## 2026-10-23 — Cube tracker removal and companion close crash
+
+Removed the cube tracker at the player's request (catalog, maps, tab, profiles, CSS). State schema is now version 2; version 1 saves load with timer rules intact. Fixed two regressions in the in-progress removal: the Next Up progress bar element had been renamed, and CompanionStore still accepted only version 1, so every native save would have failed (browser checks missed it because their bridge did not apply the store's version rule; it now does).
+
+Diagnosed the reported crash (opening/closing the companion while the meter runs) from the Windows Event Log: Blazor sent a JS interop reply after WPF had disposed the companion's WebView2, and Blazor rethrows failed sends on the UI dispatcher. Added DeferredWindowClose so BlazorWindow disposes Razor components before WebView2, and bounded WorldCompanion's JS teardown.
+
+Checks on the uncommitted tree after 5c5c98a: 21 .NET tests (5 new close-ordering, 1 cube-era store compatibility), 12 JS tests, Edge browser checks, solution build and Release publish passed. A temporary off-screen native harness (scratch, not committed) reproduced the reported stack on 5c5c98a at the first close and passed three open/close cycles plus shutdown with the companion open on the fix. The published exe passed a companion-only open/render/close check without crash events. Integrated meter with capture was not run because the game was in use. Next: player verifies LIVE-TESTING.md step 5 in the integrated meter.
+
+## 2026-10-23 — Second rift report
+
+Player reported a rift about 57 minutes before 02:58 UTC, i.e. near 11:00 server (02:00 UTC), matching the Global preset. With the earlier tentative 08:00 server recollection this supports, but does not prove, the three-hour cycle. Recorded as a rounded user report; entry closure unobserved. Documentation only; no runtime change. Next: note an exact opening time and the 10-minute entry closure.

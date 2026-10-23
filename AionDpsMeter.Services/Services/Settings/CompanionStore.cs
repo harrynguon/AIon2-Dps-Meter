@@ -3,9 +3,15 @@ using System.Text.Json;
 
 namespace AionDpsMeter.Services.Services.Settings;
 
-/// <summary>Companion progress is independent of combat history and application updates.</summary>
+/// <summary>Companion settings are independent of combat history and application updates.</summary>
 public sealed class CompanionStore
 {
+    /// <summary>
+    /// Schema version written by companion state.mjs (timer-only since cube tracking was removed).
+    /// Older files are still loaded and migrated by the companion; only the current version is written.
+    /// </summary>
+    public const int SchemaVersion = 2;
+
     private readonly string path;
     private readonly Lock gate = new();
 
@@ -33,7 +39,8 @@ public sealed class CompanionStore
             throw new ArgumentException("Companion data exceeds the size limit.");
         using var document = JsonDocument.Parse(json);
         if (document.RootElement.ValueKind != JsonValueKind.Object ||
-            !document.RootElement.TryGetProperty("version", out var version) || version.GetInt32() != 1)
+            !document.RootElement.TryGetProperty("version", out var version) ||
+            version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var number) || number != SchemaVersion)
             throw new ArgumentException("Unsupported companion data version.");
         lock (gate)
         {
