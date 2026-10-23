@@ -1,7 +1,7 @@
 # Handoff — 2026-10-23
 
 Fork: https://github.com/harrynguon/AIon2-Dps-Meter (default branch master).
-Work branch: feature/world-companion, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/1. The original commits stay on that branch and the PR; master receives them as one squash commit. The newest dated section below has the latest checks.
+PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/1 (feature/world-companion) was squash-merged into master as b4740c5; the original commits stay on that branch and the PR. Game-terms documentation: branch docs/game-terms-risk, PR https://github.com/harrynguon/AIon2-Dps-Meter/pull/2. The newest dated section below has the latest checks.
 
 ## Completed
 
@@ -29,7 +29,7 @@ Record each event's date, exact server time, UTC time, local timezone, phase, an
 
 ## After acceptance
 
-Resolve redistribution provenance (schedule data; removed maps/coordinates remain in feature-branch and PR history) before public binary distribution. Also weigh the game-terms risk recorded in SECURITY.md: NC's AION 2 Operation Policy bans creating or distributing unauthorized programs at integrated-account level. On 2026-10-23 the player approved reviewing and merging the PR into master before in-game acceptance; the acceptance checklist above still applies to the merged build. After acceptance, prepare a versioned release containing the full published folder. Scheduled activity does not detect live bosses. Sounds, radar, extra bosses and custom boss cooldowns remain excluded.
+Resolve redistribution provenance (schedule data; removed maps/coordinates remain in feature-branch and PR history) before public binary distribution. See also Game terms below. On 2026-10-23 the player approved reviewing and merging the PR into master before in-game acceptance; the acceptance checklist above still applies to the merged build. After acceptance, prepare a versioned release containing the full published folder. Scheduled activity does not detect live bosses. Sounds, radar, extra bosses and custom boss cooldowns remain excluded.
 
 ## Additional schedule evidence
 
@@ -69,3 +69,7 @@ A read-only auditor (.claude/agents/pr-auditor.md) reviewed PR #1 at 36d2e93: ap
 - Merge strategy: squash, so the removed maps/coordinates stay out of master history.
 
 Checks after these fixes: 22 .NET tests, 12 JS tests, Edge browser checks, build and Release publish passed; the native harness passed three open/close cycles and shutdown with the companion open (exit 0); the published exe passed companion-only open/render/close with no crash events. Still not covered: integrated meter with capture and combat, Alt+F4 and ◈ from both layouts, and a ◈ click during the brief close teardown (it focuses the closing window, so the click is lost). No automated test drives BlazorWindow itself; the native harness is not committed.
+
+## Game terms — 2026-10-23
+
+SECURITY.md records NC's EULA and AION 2 Operation Policy clauses and how they apply. The risk applies now, not only at a binary release: the Operation Policy bans creating or distributing unauthorized programs at integrated-account level, this fork's source (including packet decoding) is already public on GitHub, and new decoding such as Kinah counts as creating. Re-read both documents before a release or new packet decoding.

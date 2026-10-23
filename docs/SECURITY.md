@@ -1,4 +1,4 @@
-# Security and provenance
+# Security, provenance and game terms
 
 Never embed, print, log or commit credentials, tokens, private keys, game authentication data, personal progress or private combat logs. Use synthetic fixtures and secret stores where needed. Companion functionality needs no credentials. Treat saved/imported files as untrusted; preserve strict validation, bounded I/O, canonical metadata, backups and failed-load write protection.
 
@@ -27,11 +27,11 @@ Reviewed 2026-10-23 from the published pages; a reading, not legal advice. NC ha
 
 How these apply here (assessment, not NC's ruling):
 - Packet decoding is reverse engineering, and capture reads game data outside NC's published interfaces.
-- The meter identifies other players and saves their names and combat stats in local history (CombatHistoryStore); nickname hiding changes only what is displayed.
-- A passive meter arguably neither circumvents protection nor interferes with operations, the strongest reading in favour of use. Distribution falls more directly under the creating/distributing entry; this fork's update feed and any public release are distribution.
-- Decoding more packet types, for example the player's own kina, stays in the same category: more reverse engineering, but no additional players' data.
+- The meter identifies other players and saves their names and combat stats in local history (CombatHistoryStore); nickname hiding changes only what is displayed. Optional raw packet logging (Settings > Developer > Log Raw Packets, off by default) also writes other players' data to disk.
+- A passive meter arguably neither circumvents protection nor interferes with operations, the strongest reading in favour of use. The creating/distributing entry applies more directly, and already applies: developing this fork is creating, and the public GitHub fork, its update feed and any binary release are distributing.
+- Decoding more packet types, for example the player's own Kinah, is further creating and reverse engineering, but adds no other players' data.
 - Companion-only mode (--world-companion) does not start capture.
 
-Enforcement reports (secondary sources, not NC documents): an [Inven Global summary](https://www.invenglobal.com/articles/22212/new-sanctuary-and-brooches-added-aion-2-live-stream-summary-may-12-tue) of NC's 26 May 2026 Korean live stream reports a warning to DPS meter and site operators to stop recording and sharing personal DPS data, with in-game blocking and possible legal action, and no impact on regular users who are not site operators. October 2026 Global restriction waves cite unauthorized programs without naming meters; a [fan blog](https://timesaver.gg/blog/aion-2-account-temporarily-restricted) mentions unlinked, unverified Reddit reports of launch-week bans tied to a DPS meter.
+Enforcement reports (secondary sources, not NC documents): an [Inven Global summary](https://www.invenglobal.com/articles/22212/new-sanctuary-and-brooches-added-aion-2-live-stream-summary-may-12-tue) of NC's 26 May 2026 Korean live stream reports a warning to DPS meter and site operators to stop recording and sharing personal DPS data, with in-game blocking and possible legal action, and no impact on regular users who are not site operators. A [fan blog](https://timesaver.gg/blog/aion-2-account-temporarily-restricted) quotes October 2026 Global restriction notices that cite unauthorized programs without naming meters, and mentions unlinked, unverified Reddit reports of launch-week bans tied to a DPS meter.
 
 Both documents change over time. Re-read them before a public release or new packet decoding, and update this section and the README disclaimer.
