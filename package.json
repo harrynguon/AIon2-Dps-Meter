@@ -1,0 +1,11 @@
+{
+  "name": "ratmeter-companion-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/companion.test.mjs tests/companion-state.test.mjs",
+    "test:browser": "node tests/companion-browser.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

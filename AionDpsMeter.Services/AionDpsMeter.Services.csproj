@@ -9,6 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
+    <!-- Override EF's legacy bundle, which ships the vulnerable SQLite 2.1.11 native package. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
     <PackageReference Include="PacketDotNet" Version="1.4.7" />
     <PackageReference Include="SharpPcap" Version="6.3.0" />

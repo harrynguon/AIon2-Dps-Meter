@@ -1,0 +1,94 @@
+@using Microsoft.JSInterop
+@using System.IO
+@using AionDpsMeter.Core.Windowing
+@using AionDpsMeter.Services.Services.Settings
+@using AionDpsMeter.UI.Services.Windowing
+@inject IJSRuntime JS
+@inject IWindowManagerService Windows
+@implements IAsyncDisposable
+
+<link rel="stylesheet" href="companion/companion.css" />
+<div @ref="root" style="height:100%" aria-label="World companion"></div>
+@if (error is not null)
+{
+    <p role="alert">@error</p>
+}
+
+@code {
+    private ElementReference root;
+    private IJSObjectReference? module;
+    private IJSObjectReference? instance;
+    private DotNetObjectReference<WorldCompanion>? reference;
+    private string? error;
+    private bool disposed;
+    private static readonly TimeSpan JsTeardownLimit = TimeSpan.FromSeconds(2);
+    private static readonly CompanionStore Store = new(Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "HarryNguon", "RATmeter", "WorldCompanion"));
+
+    // Startup that finishes after disposal sends nothing further: the page is torn down with its window.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./companion/companion.mjs");
+            if (disposed) return;
+            reference = DotNetObjectReference.Create(this);
+            instance = await module.InvokeAsync<IJSObjectReference>("mount", root, reference);
+        }
+        catch (Exception ex) when (IsInteropFailure(ex))
+        {
+            if (disposed) return;
+            error = "Unable to open World Companion. Close and reopen it. " + ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    // JS bridge. Exceptions return to the calling promise; companion.mjs reports them in the UI.
+    /// <summary>Returns the raw saved JSON (or null); companion.mjs validates and migrates it.</summary>
+    [JSInvokable] public string? Load() => Store.Load();
+    /// <summary>Persists validated state; the store rejects other schema versions and oversized data.</summary>
+    [JSInvokable] public void Save(string json) => Store.Save(json);
+    /// <summary>Starts a native window drag from the Move button.</summary>
+    [JSInvokable] public void Drag() => Windows.Drag(WindowKey.WorldCompanion);
+    /// <summary>Requests a close; BlazorWindow defers teardown until this call has replied.</summary>
+    [JSInvokable] public void Close() => Windows.Close(WindowKey.WorldCompanion);
+
+    // Any unhandled component exception is fatal to the BlazorWebView host, so interop failures are contained here.
+    private static bool IsInteropFailure(Exception ex) =>
+        ex is JSException or JSDisconnectedException or OperationCanceledException
+            or ObjectDisposedException or InvalidOperationException;
+
+    // BlazorWindow keeps the WebView alive until this completes. One deadline covers every JS round
+    // trip, so an unresponsive page cannot hold its window open; it is abandoned without further
+    // messages and destroyed with the window.
+    private async ValueTask ReleaseAsync()
+    {
+        using var deadline = new CancellationTokenSource(JsTeardownLimit);
+        try
+        {
+            if (instance is not null)
+            {
+                await instance.InvokeVoidAsync("dispose", deadline.Token);
+                await instance.DisposeAsync().AsTask().WaitAsync(deadline.Token);
+            }
+            if (module is not null) await module.DisposeAsync().AsTask().WaitAsync(deadline.Token);
+        }
+        catch (Exception ex) when (IsInteropFailure(ex)) { }
+        finally
+        {
+            instance = null;
+            module = null;
+            reference?.Dispose();
+            reference = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (disposed) return;
+        disposed = true;
+        await ReleaseAsync();
+    }
+}

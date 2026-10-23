@@ -252,6 +252,8 @@ namespace AionDpsMeter.UI.ViewModels
         public void OpenStatEffCalc() => windowHelper.OpenStatEff();
         public void OpenWhatsNew() => windowHelper.OpenWhatsNewWindow();
 
+        public void OpenWorldCompanion() => windowHelper.OpenWorldCompanion();
+
         public void OpenSettings() => windowHelper.OpenSettings();
         public void Minimize() => windowManager.Minimize(WindowKey.Main);
         public void Close() => windowManager.CloseApplication();

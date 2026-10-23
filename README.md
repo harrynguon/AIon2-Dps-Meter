@@ -1,3 +1,5 @@
+> **World Companion fork:** open **◈** in the DPS header for world event schedules and reset timers. See [WORLD-COMPANION.md](WORLD-COMPANION.md) for setup, schedule caveats, backups and tests.
+
 # 🗡️ RATmeter - Aion 2 DPS Meter and Stat Efficiency Calculator
 
 [![Latest Version](https://img.shields.io/github/v/tag/Kuroukihime/AIon2-Dps-Meter?label=latest%20version)](https://github.com/Kuroukihime/AIon2-Dps-Meter/tags)
