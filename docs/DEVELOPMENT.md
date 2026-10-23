@@ -12,6 +12,7 @@ $dotnetExe = (Get-Command dotnet -ErrorAction Stop).Source
 $npmExe = (Get-Command npm.cmd -ErrorAction Stop).Source
 $solutionPath = Join-Path $repoRoot 'AionDpsMeter.slnx'
 $projectPath = Join-Path $repoRoot 'AionDpsMeter.UI\AionDpsMeter.UI.csproj'
+$lifecyclePath = Join-Path $repoRoot 'AionDpsMeter.LifecycleCheck\AionDpsMeter.LifecycleCheck.csproj'
 $publishPath = Join-Path $repoRoot 'local-build'
 & $dotnetExe restore $solutionPath '-warnaserror:NU1901,NU1902,NU1903,NU1904'
 if ($LASTEXITCODE) { throw 'Restore failed.' }
@@ -29,10 +30,12 @@ if ($LASTEXITCODE) { throw 'JS tests failed.' }
 if ($LASTEXITCODE) { throw 'Browser tests failed.' }
 & $dotnetExe build $solutionPath --no-restore
 if ($LASTEXITCODE) { throw 'Build failed.' }
+& $dotnetExe run --project $lifecyclePath --no-build
+if ($LASTEXITCODE) { throw 'Window lifecycle check failed.' }
 & $dotnetExe list $solutionPath package --vulnerable --include-transitive --no-restore
 ```
 
-Edge checks use a synthetic bridge and generate ignored .artifacts output. They do not replace native host or combat checks. CI runs .NET, JS, browser and build checks on Windows.
+Edge checks use a synthetic bridge and generate ignored .artifacts output. They do not replace native host or combat checks. CI runs .NET, JS, browser, build and native window lifecycle checks on Windows.
 
 ## Publish
 
@@ -49,8 +52,18 @@ $appPath = Join-Path $publishPath 'AionDpsMeter.UI.exe'
 # & $appPath
 ```
 
-Retain the entire published folder, including wwwroot. local-build is ignored. Previous native smoke automation was temporary and is not checked in; reproduce checks using HANDOFF.md. Do not add production remote-debugging flags for testing.
+Retain the entire published folder, including wwwroot. local-build is ignored. The published-executable smoke check (companion-only open, render, close) is manual; see HANDOFF.md. Do not add production remote-debugging flags for testing.
 
 ## Native window lifecycle check
 
-Companion-only mode exits when its window closes, which hides crashes raised on the UI dispatcher during close. To exercise close/reopen without packet capture, use a temporary harness outside the repository: a WPF console app referencing AionDpsMeter.UI that keeps running with ShutdownMode.OnExplicitShutdown and opens BlazorWindow with WorldCompanion off-screen. Drive the companion close button through WebView2 DevTools, enabled only for that process by setting WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS to --remote-debugging-port=<port> and WEBVIEW2_USER_DATA_FOLDER to an absolute scratch directory. A harness built with the plain Microsoft.NET.Sdk must copy wwwroot/_framework from a published build, and Playwright must reconnect over CDP for each new companion. A pass is: no unhandled exception, the process stays alive after each close, and exit code 0 after shutdown with a companion open. The harness reads the real companion settings file; opening and closing alone never write it.
+AionDpsMeter.LifecycleCheck guards the companion close crash fixed in b4740c5. Companion-only mode exits when its window closes, which hides crashes raised on the UI dispatcher during close, so the check hosts the real BlazorWindow and WorldCompanion in a WPF application that keeps running, as the integrated meter does. Each companion opens off-screen without taking focus or a taskbar button. The first two close with the companion's ✕ button, the third with WM_CLOSE (what Alt+F4 sends), and the fourth is still open when the application shuts down. The host keeps running for two seconds after each close, because a failed Blazor send surfaces on a later dispatcher turn.
+
+Run it after building, as in the setup block above (`dotnet run --project $lifecyclePath --no-build`); a run takes about 15 seconds. It prints one line per step. Exit codes:
+
+- 0: PASS.
+- 1: an unhandled exception (the stack is printed; the meter would have crashed), or a step that did not finish within 30 seconds.
+- 2: no result within three minutes (hung UI thread).
+
+With DeferredWindowClose.ShouldCancelClose forced to return false, it fails at the first close with the reported InvalidOperationException from Blazor IpcSender.
+
+The check never creates packet capture or the meter's own windows. A new temporary directory holds the companion store (registered with AddCompanionStore) and the WebView2 profile (WEBVIEW2_USER_DATA_FOLDER, set only inside the check process); it is removed afterwards, and player settings are never read or written. The page is driven through CoreWebView2 script execution, so no remote-debugging port is opened. Web assets come from the UI's development static web assets manifest, which the check's build copies as its own, so it serves this checkout's wwwroot and blazor.webview.js. It does not cover the integrated meter, capture, combat or the ◈ button.

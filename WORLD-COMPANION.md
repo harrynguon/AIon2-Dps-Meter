@@ -64,17 +64,19 @@ before distributing a public binary. Game artwork remains its respective owners'
 
 ## Validation of this implementation
 
-- Full .NET suite: 21 passing tests, including durable settings storage, cube-era save
-  compatibility, companion window close ordering and the native SQLite version.
+- Full .NET suite: 25 passing tests, including durable settings storage and its unchanged
+  location, cube-era save compatibility, companion window close ordering and the native
+  SQLite version.
 - Schedule/state tests: 12 passing tests, including weekly/year rollover, fractional
   server offsets, UTC invariance, simultaneous events, exact rift phase boundaries and
   cube-era migration.
 - Headless Edge interaction checks: timers, preset preview/apply, save/reload, export,
   invalid import, recovery, save retry and disposal, with the native save-version rule mirrored.
-- Native WebView2 window lifecycle: a temporary off-screen harness reproduced the
-  reported close crash on the previous code and showed three clean open/close cycles plus
-  shutdown with the companion open on the fixed code. The published executable opened,
-  rendered and closed cleanly in companion-only mode.
+- Native WebView2 window lifecycle: an automated off-screen check, run in CI, closes the
+  companion with its ✕ button and with WM_CLOSE (as Alt+F4 does), reopens it, and shuts
+  down with it open, without an unhandled exception. With the fix disabled it reproduces
+  the reported close crash. The published executable opened, rendered and closed cleanly
+  in companion-only mode. The integrated meter has not been checked this way.
 - In-game combat and Nezekan schedule correctness have not been validated.
 - The legacy SQLite bundle was replaced with `SQLitePCLRaw.bundle_e_sqlite3` 3.0.5
   to remove the dependency affected by CVE-2025-6965 / GHSA-2m69-gcr7-jv3q.

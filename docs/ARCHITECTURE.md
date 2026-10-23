@@ -33,7 +33,7 @@ Server offset is fixed; local display follows computer timezone rules. Kaira/rif
 
 ## Persistence
 
-Razor loads JSON through CompanionStore; JS validates using the import schema and canonical event metadata. Saved state is version 2: server offset and nine event rules. Version 1 (cube-era) files still load; their timer rules are kept and retired map/profile fields are dropped without validation. CompanionStore writes only the current version (SchemaVersion), so state.mjs and the store must change together. Writes are queued. Platform LocalApplicationData resolves the absolute directory HarryNguon/RATmeter/WorldCompanion, containing companion.json and preceding-save companion.json.bak. Original DPS settings/history remain separate.
+Razor loads JSON through CompanionStore; JS validates using the import schema and canonical event metadata. Saved state is version 2: server offset and nine event rules. Version 1 (cube-era) files still load; their timer rules are kept and retired map/profile fields are dropped without validation. CompanionStore writes only the current version (SchemaVersion), so state.mjs and the store must change together. Writes are queued. CompanionStore.DefaultDirectory resolves the absolute directory HarryNguon/RATmeter/WorldCompanion under platform LocalApplicationData, containing companion.json and preceding-save companion.json.bak. App registers one store for that directory through AddCompanionStore and WorldCompanion injects it; checks register a scratch directory instead. Original DPS settings/history remain separate.
 
 Unreadable/invalid saves trigger temporary defaults with writes blocked. Recovery permits original-text export when readable, validated import or explicit Start fresh. Disk failures remain visible and subsequent saves can retry. Imports/files are bounded at 2 MB.
 
@@ -42,9 +42,10 @@ Unreadable/invalid saves trigger temporary defaults with writes blocked. Recover
 - tests/companion.test.mjs: recurrence, boundaries, offsets, Global preset.
 - tests/companion-state.test.mjs: schema validation and cube-era migration.
 - tests/companion-browser.cjs: synthetic-bridge UI interactions/recovery.
-- AionDpsMeter.Tests/CompanionStoreTests.cs: durable storage and accepted schema version.
-- AionDpsMeter.Tests/DeferredWindowCloseTests.cs: Blazor window close ordering.
+- AionDpsMeter.Tests/CompanionStoreTests.cs: durable storage, accepted schema version, unchanged default location and DI registration.
+- AionDpsMeter.Tests/DeferredWindowCloseTests.cs: Blazor window close ordering, run on a WPF dispatcher thread as in a window.
 - AionDpsMeter.Tests/SqliteRuntimeTests.cs: loaded SQLite version.
+- AionDpsMeter.LifecycleCheck/Program.cs: native companion close (✕ and WM_CLOSE), reopen and shutdown with it open, in a long-lived off-screen WPF host. An executable check run after the build (locally and in CI), not part of dotnet test.
 
 Recurrence changes need boundary checks; state changes need compatibility and invalid-input checks. Browser checks do not prove native host or capture behavior.
 
@@ -52,7 +53,7 @@ Recurrence changes need boundary checks; state changes need compatibility and in
 
 WPF disposes a window's WebView2 control when the window closes, but BlazorWebView is never disposed automatically. Any later Blazor message, such as the reply to the JS call that requested the close, then fails, and Blazor rethrows the failure on the UI dispatcher, terminating the meter. BlazorWindow therefore cancels every normal first close and, on a later dispatcher turn (never inside the Close() caller, so a JS-requested close can reply first), awaits BlazorWebView.DisposeAsync (components, then WebView2) and closes again. WorldCompanion gives all of its JS teardown round trips one two-second deadline and sends nothing further after a failed or late reply. Application shutdown cannot be cancelled; the WebView is destroyed at once and deferred disposal is skipped. WindowHelper focuses an open companion rather than constructing a second window, and saves bounds only for a loaded window with finite coordinates.
 
-Companion-only mode exits when its window closes, which hides dispatcher crashes; window lifecycle checks need the integrated meter or an equivalent long-lived host.
+Companion-only mode exits when its window closes, which hides dispatcher crashes; window lifecycle checks need the integrated meter or an equivalent long-lived host. AionDpsMeter.LifecycleCheck is that host (see DEVELOPMENT.md, Native window lifecycle check).
 
 ## Global preset
 

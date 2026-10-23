@@ -41,3 +41,8 @@ jobs:
 
       - name: Build
         run: dotnet build AionDpsMeter.slnx --no-restore
+
+      # Off-screen WebView2 companion close/reopen/shutdown in a long-lived WPF host (docs/DEVELOPMENT.md).
+      - name: Native window lifecycle check
+        timeout-minutes: 5
+        run: dotnet run --project "${{ github.workspace }}/AionDpsMeter.LifecycleCheck/AionDpsMeter.LifecycleCheck.csproj" --no-build
