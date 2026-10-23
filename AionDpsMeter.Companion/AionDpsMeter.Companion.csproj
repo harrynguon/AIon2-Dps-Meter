@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!-- World Companion feature module: the companion page, its browser assets (served at
+       _content/AionDpsMeter.Companion/) and its settings store. It references no other project in this
+       repository, so upstream merges cannot reach it and it can move to another BlazorWebView host.
+       Hosts implement ICompanionWindow and call AddWorldCompanion; see docs/ARCHITECTURE.md, "Fork boundary". -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+  </ItemGroup>
+
+</Project>

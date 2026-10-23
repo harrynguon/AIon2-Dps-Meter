@@ -72,3 +72,9 @@ A pr-auditor review of PR #3 at d8a28ac approved with nits. It re-ran every chec
 - Purpose comments for the remaining helpers, and the HANDOFF superseded marker clarified.
 
 Open: the integrated meter with capture/combat, ◈ and real Alt+F4 input remain manual (LIVE-TESTING.md step 5); the check does not assert component disposal. Next: the player's go-ahead to squash-merge PR #3.
+
+## 2026-10-23 — Companion module and fork boundary
+
+Player decision: stay on this fork and merge upstream releases; keep fork code modular so merges stay easy and the companion can move to a future meter. Moved the page, browser assets and CompanionStore into the AionDpsMeter.Companion Razor class library (net10.0, no repository project references) behind ICompanionWindow and AddWorldCompanion. Moved meter wiring (store location, window actions, launcher, companion-only mode via an App partial) to AionDpsMeter.UI/Companion. Reverted the upstream ServiceCollectionExtensions edit. Upstream-file additions fell from 126 to 81 lines. Added the fork-boundary rules to AGENTS.md, the seam table and reuse guide to ARCHITECTURE.md, a boundary check to the pr-auditor, and WorldCompanionHostTests (module independence, unchanged store location, host registration).
+
+Checks: 27 .NET tests, 12 JS tests, Edge browser checks, solution build, native lifecycle check (exit 0), Release publish (assets under wwwroot/_content/AionDpsMeter.Companion) and published companion-only open/render/close with no crash events. Open: in-game acceptance. Next: PR, auditor review, merge on the player's go-ahead.

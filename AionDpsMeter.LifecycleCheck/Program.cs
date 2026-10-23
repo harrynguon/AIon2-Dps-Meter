@@ -2,10 +2,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using AionDpsMeter.Companion;
 using AionDpsMeter.Core.Windowing;
-using AionDpsMeter.Services.Extensions;
 using AionDpsMeter.Tests;
-using AionDpsMeter.UI.Pages;
+using AionDpsMeter.UI.Companion;
 using AionDpsMeter.UI.Services.Windowing;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,8 +60,9 @@ internal static class Program
             var services = new ServiceCollection();
             services.AddWpfBlazorWebView();
             services.AddSingleton(TestAppSettingsService.Create());
-            services.AddCompanionStore(Path.Combine(scratch, "companion"));
             services.AddWindowManager();
+            // The meter's own companion wiring, with the store in the scratch directory.
+            services.AddWorldCompanionHost(Path.Combine(scratch, "companion"));
             using var provider = services.BuildServiceProvider();
 
             app.Startup += async (_, _) => app.Shutdown(await RunSequenceAsync(provider) ? 0 : 1);

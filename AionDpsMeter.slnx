@@ -2,6 +2,7 @@
   <Project Path="AionDpsMeter.Core/AionDpsMeter.Core.csproj" />
   <Project Path="AionDpsMeter.Services/AionDpsMeter.Services.csproj" />
   <Project Path="AionDpsMeter.UI/AionDpsMeter.UI.csproj" />
+  <Project Path="AionDpsMeter.Companion/AionDpsMeter.Companion.csproj" />
   <Project Path="AionDpsMeter.Tests/AionDpsMeter.Tests.csproj" />
   <Project Path="AionDpsMeter.LifecycleCheck/AionDpsMeter.LifecycleCheck.csproj" />
   <Project Path="AionDpsMeter.Updater/AionDpsMeter.Updater.csproj" />

@@ -24,7 +24,6 @@ namespace AionDpsMeter.UI
     /// </summary>
     public partial class App : Application
     {
-        private bool companionOnly;
         public static IHost AppHost { get; private set; }
 
         public App()
@@ -43,7 +42,7 @@ namespace AionDpsMeter.UI
                     services.AddCombatHistoryPersistence("combat-history.db");
                    
                     services.AddSingleton<IAppSettingsService, AppSettingsService>();
-                    services.AddCompanionStore(CompanionStore.DefaultDirectory);
+                    ConfigureWorldCompanion(services);
                     services.AddSingleton<UpdateCheckerService>();
                     services.AddSingleton<FilePacketWriter>();
                     services.AddSingleton<TcpStreamBuffer>();
@@ -75,17 +74,8 @@ namespace AionDpsMeter.UI
         {
             await AppHost.StartAsync();
 
-            companionOnly = e.Args.Contains("--world-companion");
-            if (companionOnly)
+            if (TryStartCompanionOnly(e))
             {
-                // Also permits offline companion use without initializing packet capture.
-                var companion = new BlazorWindow(AppHost.Services, typeof(Pages.WorldCompanion))
-                {
-                    Title = "RATmeter World Companion", Width = 1060, Height = 820,
-                    MinWidth = 700, MinHeight = 550, ResizeMode = ResizeMode.CanResizeWithGrip
-                };
-                AppHost.Services.GetRequiredService<IWindowManagerService>()
-                    .Open(WindowKey.WorldCompanion, companion, true);
                 base.OnStartup(e);
                 return;
             }
@@ -104,10 +94,8 @@ namespace AionDpsMeter.UI
         {
             try
             {
-                if (companionOnly)
+                if (await TryExitCompanionOnlyAsync())
                 {
-                    await AppHost.StopAsync();
-                    await Log.CloseAndFlushAsync();
                     base.OnExit(e);
                     return;
                 }

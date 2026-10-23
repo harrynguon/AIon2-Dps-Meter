@@ -27,6 +27,7 @@ Use absolute paths in every shell command and file operation. Resolve the reposi
    - Untrusted data (saved files, imports) is validated; recovery and write-protection paths are preserved.
    - Filesystem paths derive from trusted application/platform directories; no hard-coded developer homes or working-directory dependence in new code.
    - User customizations survive default changes; Nezekan timings are not presented as verified without documented evidence; attribution and the provenance gap are preserved.
+   - Fork boundary: fork features live in module projects that reference no repository project, or in fork-owned host folders; edits to upstream files are one-line hooks listed in the `docs/ARCHITECTURE.md` seam table, and that table matches `git diff --diff-filter=M` against the upstream release base. Flag reformatting or refactoring of upstream code.
    - Schedule rules, validation, storage and UI stay separate; new or changed modules and functions carry brief, accurate purpose comments.
    - Boundary and compatibility tests accompany behaviour changes; docs and `docs/WORKLOG.md` record reason, actual checks, open issues and next action. Unchecked acceptance items are not described as done.
 4. Docs: claims in README, `WORLD-COMPANION.md` and `docs/` match the code and the checks actually run.

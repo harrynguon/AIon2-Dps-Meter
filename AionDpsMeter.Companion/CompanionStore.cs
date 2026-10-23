@@ -1,9 +1,12 @@
 using System.Text;
 using System.Text.Json;
 
-namespace AionDpsMeter.Services.Services.Settings;
+namespace AionDpsMeter.Companion;
 
-/// <summary>Companion settings are independent of combat history and application updates.</summary>
+/// <summary>
+/// Companion settings file, independent of the host's own settings, history and updates. The host chooses
+/// the directory (the meter's default is WorldCompanionHost.DefaultStoreDirectory).
+/// </summary>
 public sealed class CompanionStore
 {
     /// <summary>
@@ -11,14 +14,6 @@ public sealed class CompanionStore
     /// Older files are still loaded and migrated by the companion; only the current version is written.
     /// </summary>
     public const int SchemaVersion = 2;
-
-    /// <summary>
-    /// Per-user directory the meter stores companion settings in. Existing saves live here, so it must not change;
-    /// tests and native checks pass their own scratch directory instead.
-    /// </summary>
-    public static string DefaultDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "HarryNguon", "RATmeter", "WorldCompanion");
 
     private readonly string path;
     private readonly Lock gate = new();

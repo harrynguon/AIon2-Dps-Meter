@@ -1,6 +1,6 @@
 const {chromium}=require('playwright');
 const http=require('http'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
-const base=path.resolve(__dirname,'../AionDpsMeter.UI/wwwroot/companion');
+const base=path.resolve(__dirname,'../AionDpsMeter.Companion/wwwroot');
 // The synthetic bridge mirrors CompanionStore.Save: only schema version 2 is accepted.
 const harness=`<!doctype html><html><head><link rel="stylesheet" href="/companion.css"></head><body style="margin:0;height:100vh"><div id="root" style="height:100%"></div><script type="module">import {mount} from '/companion.mjs';window.instance=await mount(document.querySelector('#root'),{invokeMethodAsync:async(name,json)=>{if(name==='Load')return localStorage.getItem('state');if(name==='Save'){if(window.failSaves)throw Error('Simulated disk failure');if(JSON.parse(json).version!==2)throw Error('Unsupported companion data version.');localStorage.setItem('state',json);};}});</script></body></html>`;
 fs.mkdirSync(path.resolve(__dirname,'../.artifacts'),{recursive:true});
