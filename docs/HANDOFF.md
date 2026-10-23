@@ -29,7 +29,7 @@ Record each event's date, exact server time, UTC time, local timezone, phase, an
 
 ## After acceptance
 
-Resolve redistribution provenance (schedule data; removed maps/coordinates remain in feature-branch and PR history) before public binary distribution. On 2026-10-23 the player approved reviewing and merging the PR into master before in-game acceptance; the acceptance checklist above still applies to the merged build. After acceptance, prepare a versioned release containing the full published folder. Scheduled activity does not detect live bosses. Sounds, radar, extra bosses and custom boss cooldowns remain excluded.
+Resolve redistribution provenance (schedule data; removed maps/coordinates remain in feature-branch and PR history) before public binary distribution. Also weigh the game-terms risk recorded in SECURITY.md: NC's AION 2 Operation Policy bans creating or distributing unauthorized programs at integrated-account level. On 2026-10-23 the player approved reviewing and merging the PR into master before in-game acceptance; the acceptance checklist above still applies to the merged build. After acceptance, prepare a versioned release containing the full published folder. Scheduled activity does not detect live bosses. Sounds, radar, extra bosses and custom boss cooldowns remain excluded.
 
 ## Additional schedule evidence
 
