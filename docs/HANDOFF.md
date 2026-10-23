@@ -30,3 +30,7 @@ Record each event's date, exact server time, UTC time, local timezone, phase, an
 ## After acceptance
 
 Resolve map/data redistribution provenance before public binary distribution. Review/merge the draft PR after acceptance, then prepare a versioned release containing the full published folder. Scheduled activity does not detect live bosses. Sounds, radar, extra bosses and custom boss cooldowns remain excluded.
+
+## Additional schedule evidence
+
+The [A2Tools comparison](TIMER-COMPARISON.md) supports 07:00 UTC resets and a server-based 02:00 rift cycle, differing from our defaults. It also identifies three-minute Shugo/Invasion entry windows. Prioritize an explicit Global preset preserving saved customizations. This is third-party source evidence; live Nezekan verification remains pending.

@@ -13,3 +13,7 @@ Added shared strict state validation, failed-load recovery/write protection, bou
 ## 2026-10-23 — Documentation handoff
 
 Added documentation index, architecture, build/test instructions, security/provenance, acceptance checklist and repository agent instructions. Replaced CWD-dependent overview commands with the development guide. Checked Markdown links and Git whitespace; runtime unchanged. Next: in-game acceptance and exact Nezekan reset/rift evidence. Redistribution provenance remains unresolved.
+
+## 2026-10-23 — A2Tools timer review
+
+Compared pinned A2Tools data, recurrence functions and generator against our timers. Thirteen isolated reference/comparison assertions and all twelve existing JS tests passed. Documented reset/rift discrepancies, entry windows, timezone design and evidence limits in TIMER-COMPARISON.md. No runtime defaults or user settings changed. Next: explicit Global preset and Nezekan verification.
