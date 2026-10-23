@@ -50,6 +50,7 @@ Npcap/WebView2 runtime prerequisites.
 dotnet build AionDpsMeter.slnx
 dotnet test --solution AionDpsMeter.slnx
 node --test tests/companion.test.mjs
+npm test # Includes schedule, catalog and saved-state validation
 npm install
 npm run test:browser # Uses installed Microsoft Edge; screenshots in .artifacts/
 ```
@@ -72,8 +73,8 @@ terms before distributing a public binary. Game artwork remains its respective o
 
 ## Validation of this implementation
 
-- Full .NET suite: 12 passing tests (including durable progress storage).
-- Schedule/data tests: 8 passing tests, including weekly/year rollover, fractional
+- Full .NET suite: 15 passing tests (including durable progress storage and the native SQLite version).
+- Schedule/data/state tests: 12 passing tests, including weekly/year rollover, fractional
   server offsets, UTC invariance, simultaneous events and exact rift phase boundaries.
 - Headless Edge interaction checks: maps, pins, inspector/checklist synchronisation,
   search, zoom, persistence/reload, independent profiles, schedule editing, export,
@@ -82,5 +83,26 @@ terms before distributing a public binary. Game artwork remains its respective o
   companion-only mode: JS/.NET initialization, local maps/data, tabs, inspector,
   settings and close.
 - In-game combat and Nezekan schedule correctness have not been validated.
-- Build reports an upstream `SQLitePCLRaw.lib.e_sqlite3` 2.1.11 NU1903 advisory
-  (GHSA-2m69-gcr7-jv3q). This feature does not change that existing dependency.
+- The legacy SQLite bundle was replaced with `SQLitePCLRaw.bundle_e_sqlite3` 3.0.5
+  to remove the dependency affected by CVE-2025-6965 / GHSA-2m69-gcr7-jv3q.
+  A runtime test checks the loaded native SQLite includes the fix. NuGet's resolved
+  direct/transitive audit reports no known vulnerable packages at the time of this change.
+  CI treats NuGet vulnerability advisories as errors and runs the browser recovery tests.
+
+## Recovery and security
+
+Saved files and imported backups use one strict schema check. Invalid profiles,
+unknown cube IDs, non-boolean completion values, invalid clock rules and oversized
+files are rejected. Metadata such as event names is restored from the built-in catalog.
+If saved data cannot be read, the app runs with temporary defaults and blocks writes
+to the original file. Export the original for recovery, import a valid backup, or
+explicitly choose Start fresh. No credentials or game authentication data are needed.
+Storage paths are absolute and resolved from the platform's per-user application-data directory.
+
+## Nezekan verification notes
+
+The player reported a server clock reading consistent with UTC+9 and tentatively
+reported daily reset at 18:00 Australian time. Assuming Sydney during daylight
+saving, that is 16:00 UTC+9 / 07:00 UTC. This remains a provisional observation;
+the default schedule has not been silently changed or marked verified. The next
+daily reset countdown and rift opening should be checked directly in-game.

@@ -11,6 +11,8 @@ public sealed class CompanionStore
 
     public CompanionStore(string directory)
     {
+        if (!Path.IsPathFullyQualified(directory))
+            throw new ArgumentException("Companion storage requires an absolute directory.", nameof(directory));
         path = Path.Combine(directory, "companion.json");
     }
 
@@ -19,6 +21,8 @@ public sealed class CompanionStore
         lock (gate)
         {
             if (!File.Exists(path)) return null;
+            if (new FileInfo(path).Length > 2_000_000)
+                throw new InvalidDataException("Companion data exceeds the size limit.");
             return File.ReadAllText(path);
         }
     }

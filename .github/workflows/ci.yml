@@ -20,7 +20,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore AionDpsMeter.slnx
+        run: dotnet restore "${{ github.workspace }}/AionDpsMeter.slnx" "-warnaserror:NU1901,NU1902,NU1903,NU1904"
 
       - name: Tests
         run: dotnet test --solution AionDpsMeter.slnx --no-restore
@@ -31,7 +31,13 @@ jobs:
           node-version: '22'
 
       - name: Companion schedule and data tests
-        run: node --test tests/companion.test.mjs
+        run: node --test "${{ github.workspace }}/tests/companion.test.mjs" "${{ github.workspace }}/tests/companion-state.test.mjs"
+
+      - name: Install browser test dependency
+        run: npm --prefix "${{ github.workspace }}" ci --ignore-scripts
+
+      - name: Companion browser and recovery tests
+        run: npm --prefix "${{ github.workspace }}" run test:browser
 
       - name: Build
         run: dotnet build AionDpsMeter.slnx --no-restore
