@@ -1,5 +1,6 @@
 import {defaults} from './schedule.mjs';
-// Independent Global rules from the source comparison; never mutate saved settings.
+// Global rules: times and window lengths follow taengu/A2Tools-Plugins event-timers data at b11f345
+// (see docs/TIMER-COMPARISON.md); no A2Tools code is used. Never mutate saved settings.
 export function globalSchedule() {
   return structuredClone(defaults).map(e => {
     if (['daily','weekly'].includes(e.id)) Object.assign(e,{basis:'utc',hours:[7]});

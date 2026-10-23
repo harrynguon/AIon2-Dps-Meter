@@ -22,6 +22,7 @@ public sealed class CompanionStore
         path = Path.Combine(directory, "companion.json");
     }
 
+    /// <summary>Returns the saved JSON unchanged, or null when none exists; validation happens in the companion.</summary>
     public string? Load()
     {
         lock (gate)
@@ -33,6 +34,10 @@ public sealed class CompanionStore
         }
     }
 
+    /// <summary>
+    /// Atomically replaces the saved JSON after checking size and schema version; the previous file
+    /// (even a malformed one) is kept as companion.json.bak.
+    /// </summary>
     public void Save(string json)
     {
         if (Encoding.UTF8.GetByteCount(json) > 2_000_000)

@@ -22,7 +22,7 @@ timer rules are kept and cube progress is no longer read or written.
 
 ## Schedule accuracy
 
-New installations use the Global preset described below; existing rules are preserved. They are **not verified
+New installations use the Global preset ([details](docs/ARCHITECTURE.md#global-preset)); existing rules are preserved. They are **not verified
 against Global Asia / Nezekan**. UTC+9 is the initial server-clock assumption.
 The Global preset uses server time for Kaira/rifts and UTC for resets.
 Global daily and Wednesday resets use 07:00 UTC (16:00 Asia server time). Check the in-game calendar
@@ -51,11 +51,13 @@ See the [maintainer documentation](docs/README.md) for setup, build/test command
 ## Attribution
 
 Original meter: Kuroukihime/AIon2-Dps-Meter, GPLv3 (see LICENSE).
-Schedule defaults are adapted from Byanski/aion2timeroverlay at
+The Global preset's times and window lengths follow taengu/A2Tools-Plugins event-timers data at
+`b11f345c93494a2b6a77142002dc26a656b610d2` (parameters only, no code; licence not reviewed;
+see [the comparison](docs/TIMER-COMPARISON.md)). Legacy schedule defaults are adapted from Byanski/aion2timeroverlay at
 `2a5727ecdf5487e9becb6b3a756819f9d14ff564`, whose package.json declares MIT.
 Its README describes this as a Corpus.gg companion. Earlier commits of this fork also
 bundled that repository's cube coordinates and maps; they are no longer in the
-working tree but remain in Git history. The new UI and schedule implementation are written for this fork.
+working tree; they remain in the feature branch and pull request history, not in master. The new UI and schedule implementation are written for this fork.
 The source repository does not include a standalone MIT licence text or a separate
 map/data grant. Preserve this provenance; see [security and provenance](docs/SECURITY.md)
 before distributing a public binary. Game artwork remains its respective owners'.
@@ -92,12 +94,9 @@ Storage paths are absolute and resolved from the platform's per-user application
 
 ## Nezekan verification notes
 
-The player reported a server clock reading consistent with UTC+9 and tentatively
-reported daily reset at 18:00 Australian time. Assuming Sydney during daylight
-saving, that is 16:00 UTC+9 / 07:00 UTC. This remains a provisional observation;
-existing saved rules are not silently changed or marked verified; the Global preset now corroborates this observation. The next
-daily reset countdown and rift opening should be checked directly in-game.
-
-## Global preset implemented — 2026-10-23
-
-New installations use the source-based Global preset. Existing saves retain every custom rule. In Settings, Load Global preset previews rules; Save schedule applies them. The server offset stays under user control (Asia: +9). Daily/Wednesday reset is 07:00 UTC. Rifts start at server 02:00 every three hours with a ten-minute portal window; no unsupported sixty-minute activity window is assumed. Shugo/Invasion have three-minute entry windows and seven/thirteen-minute total activity. Entry-close countdowns switch to remaining activity after closure. Boss/siege end times are unknown and do not generate an assumed active window. Live Nezekan verification remains pending.
+Player reports and screenshots so far all agree with the Global preset: a daily-completion
+countdown consistent with 16:00 server (07:00 UTC), weekly reset confirmed at Wednesday 18:00
+Melbourne (AEDT), and rifts recalled near 08:00 and reported near 11:00 server. None is an exact
+observed transition, and behaviour outside Australian daylight saving is unverified. Details and
+next observations are in the [handoff](docs/HANDOFF.md). Preset parameters are described in
+[architecture](docs/ARCHITECTURE.md#global-preset).

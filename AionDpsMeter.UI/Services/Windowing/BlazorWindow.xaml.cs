@@ -63,7 +63,7 @@ namespace AionDpsMeter.UI.Services.Windowing
         /// <summary>
         /// Disposes Razor components before WPF tears down the WebView2 control, so their final
         /// interop messages still reach a live WebView. Closes that cannot be cancelled
-        /// (application shutdown) proceed immediately.
+        /// (application shutdown) proceed immediately and skip component disposal.
         /// </summary>
         protected override void OnClosing(CancelEventArgs e)
         {

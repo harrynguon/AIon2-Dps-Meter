@@ -10,8 +10,10 @@ SQLitePCLRaw.bundle_e_sqlite3 3.0.5 replaces the dependency affected by CVE-2025
 
 Original meter: https://github.com/Kuroukihime/AIon2-Dps-Meter at 57974f81fd64dfca7e0f9d664765607ca20749c9. Preserve GPLv3 LICENSE.
 
-Schedule references, coordinates and maps: https://github.com/Byanski/aion2timeroverlay at 2a5727ecdf5487e9becb6b3a756819f9d14ff564. Its package.json declares MIT, but the snapshot contains no standalone MIT text or separate map/data grant. Its README describes a Corpus.gg companion. Third-party artwork provenance is not established by that package declaration alone. The integrated UI/recurrence implementation was written for this fork.
+Global preset parameters (reset and rift times, entry-window lengths): https://github.com/taengu/A2Tools-Plugins at b11f345c93494a2b6a77142002dc26a656b610d2, event-timers data. Only schedule parameters were adopted, not code; the repository's licence terms have not been reviewed. See TIMER-COMPARISON.md.
 
-The cube coordinates (cubes.json) and both maps were removed from the working tree on 2026-10-23 when the cube tracker was retired. They remain in Git history (5432b80 through 5c5c98a) and therefore in the pushed fork; removal does not resolve their provenance. A binary built from the current tree no longer contains them, but schedule defaults are still adapted from the same source.
+Legacy schedule references, coordinates and maps: https://github.com/Byanski/aion2timeroverlay at 2a5727ecdf5487e9becb6b3a756819f9d14ff564. Its package.json declares MIT, but the snapshot contains no standalone MIT text or separate map/data grant. Its README describes a Corpus.gg companion. Third-party artwork provenance is not established by that package declaration alone. The integrated UI/recurrence implementation was written for this fork.
+
+The cube coordinates (cubes.json) and both maps were removed from the working tree on 2026-10-23 when the cube tracker was retired. They remain in the fork's feature/world-companion history and pull request #1 (5432b80 through 5c5c98a); master receives the work as a squash merge, so its history does not contain them. Removal does not resolve their provenance. A binary built from the current tree no longer contains them, but schedule defaults are still adapted from the same source.
 
 Confirm third-party redistribution terms (schedule data; maps/coordinates if history is redistributed) before a public binary release. Record supporting evidence here when resolved. No public binary release has been published at this baseline.

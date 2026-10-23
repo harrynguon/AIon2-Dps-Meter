@@ -21,6 +21,7 @@
     private DotNetObjectReference<WorldCompanion>? reference;
     private string? error;
     private bool disposed;
+    private static readonly TimeSpan JsTeardownLimit = TimeSpan.FromSeconds(2);
     private static readonly CompanionStore Store = new(Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "HarryNguon", "RATmeter", "WorldCompanion"));
@@ -44,9 +45,14 @@
         }
     }
 
+    // JS bridge. Exceptions return to the calling promise; companion.mjs reports them in the UI.
+    /// <summary>Returns the raw saved JSON (or null); companion.mjs validates and migrates it.</summary>
     [JSInvokable] public string? Load() => Store.Load();
+    /// <summary>Persists validated state; the store rejects other schema versions and oversized data.</summary>
     [JSInvokable] public void Save(string json) => Store.Save(json);
+    /// <summary>Starts a native window drag from the Move button.</summary>
     [JSInvokable] public void Drag() => Windows.Drag(WindowKey.WorldCompanion);
+    /// <summary>Requests a close; BlazorWindow defers teardown until this call has replied.</summary>
     [JSInvokable] public void Close() => Windows.Close(WindowKey.WorldCompanion);
 
     // Any unhandled component exception is fatal to the BlazorWebView host, so interop failures are contained here.
@@ -54,18 +60,20 @@
         ex is JSException or JSDisconnectedException or OperationCanceledException
             or ObjectDisposedException or InvalidOperationException;
 
-    // BlazorWindow keeps the WebView alive until this completes. A page that fails or does not answer
-    // in time is abandoned without further messages; it is destroyed with the window.
+    // BlazorWindow keeps the WebView alive until this completes. One deadline covers every JS round
+    // trip, so an unresponsive page cannot hold its window open; it is abandoned without further
+    // messages and destroyed with the window.
     private async ValueTask ReleaseAsync()
     {
+        using var deadline = new CancellationTokenSource(JsTeardownLimit);
         try
         {
             if (instance is not null)
             {
-                await instance.InvokeVoidAsync("dispose", TimeSpan.FromSeconds(2));
-                await instance.DisposeAsync();
+                await instance.InvokeVoidAsync("dispose", deadline.Token);
+                await instance.DisposeAsync().AsTask().WaitAsync(deadline.Token);
             }
-            if (module is not null) await module.DisposeAsync();
+            if (module is not null) await module.DisposeAsync().AsTask().WaitAsync(deadline.Token);
         }
         catch (Exception ex) when (IsInteropFailure(ex)) { }
         finally

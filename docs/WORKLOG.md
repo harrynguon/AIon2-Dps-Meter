@@ -41,3 +41,9 @@ Checks on the uncommitted tree after 5c5c98a: 21 .NET tests (5 new close-orderin
 ## 2026-10-23 — Second rift report
 
 Player reported a rift about 57 minutes before 02:58 UTC, i.e. near 11:00 server (02:00 UTC), matching the Global preset. With the earlier tentative 08:00 server recollection this supports, but does not prove, the three-hour cycle. Recorded as a rounded user report; entry closure unobserved. Documentation only; no runtime change. Next: note an exact opening time and the 10-minute entry closure.
+
+## 2026-10-23 — PR auditor, pre-merge fixes and squash merge
+
+Added .claude/agents/pr-auditor.md (36d2e93), a read-only Claude Code reviewer for pre-merge audits. Its review of PR #1 approved with nits; fixed the findings before merging: deferred Blazor release to a later dispatcher turn and skipped it on forced closes, one deadline for all companion JS teardown, focus instead of re-creating an open companion (avoids unshown windows saving NaN bounds at exit), A2Tools provenance, purpose comments and documentation duplication. Chose a squash merge into master so removed third-party maps/coordinates stay out of master history; original commits remain on the branch and PR.
+
+Checks: 22 .NET tests, 12 JS tests, Edge browser checks, build, Release publish, native harness (three open/close cycles and shutdown with the companion open, exit 0) and published companion-only smoke passed. Open: in-game integrated acceptance (HANDOFF checklist), A2Tools licence review. Next: player tests the merged build in-game.

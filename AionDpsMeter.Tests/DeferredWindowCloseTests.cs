@@ -2,7 +2,8 @@ using AionDpsMeter.UI.Services.Windowing;
 
 namespace AionDpsMeter.Tests;
 
-// Close ordering for Blazor windows: content is released before the native WebView is destroyed.
+// Close ordering for Blazor windows: content is released before the native WebView is destroyed,
+// and never inside the call that requested the close.
 public sealed class DeferredWindowCloseTests
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
@@ -10,78 +11,107 @@ public sealed class DeferredWindowCloseTests
     [Fact]
     public async Task FirstCloseWaitsForReleaseThenClosesOnce()
     {
+        var started = new TaskCompletionSource();
         var release = new TaskCompletionSource();
-        var closed = new TaskCompletionSource();
         var releases = 0;
         var closes = 0;
         var gate = new DeferredWindowClose(
-            () => { releases++; return new ValueTask(release.Task); },
-            () => { closes++; closed.TrySetResult(); });
+            () => { releases++; started.TrySetResult(); return new ValueTask(release.Task); },
+            () => closes++);
 
         Assert.True(gate.ShouldCancelClose());
         Assert.True(gate.ShouldCancelClose());
-        Assert.Equal(1, releases);
+        await started.Task.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.Equal(0, closes);
 
         release.SetResult();
-        await closed.Task.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+        await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.False(gate.ShouldCancelClose());
         Assert.Equal(1, releases);
         Assert.Equal(1, closes);
     }
 
     [Fact]
-    public void SynchronousReleaseLetsTheCurrentCloseProceed()
+    public async Task SynchronousReleaseStillRunsOutsideTheClosingCall()
     {
+        var releases = 0;
         var closes = 0;
-        var gate = new DeferredWindowClose(() => ValueTask.CompletedTask, () => closes++);
+        var gate = new DeferredWindowClose(() => { releases++; return ValueTask.CompletedTask; }, () => closes++);
 
+        // A JS-requested close must return (and reply) before the WebView can be disposed.
+        Assert.True(gate.ShouldCancelClose());
+        Assert.Equal(0, releases);
+
+        await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+        Assert.Equal(1, releases);
+        Assert.Equal(1, closes);
         Assert.False(gate.ShouldCancelClose());
-        Assert.Equal(0, closes);
     }
 
     [Fact]
     public async Task ReleaseFailureIsReportedAndStillCloses()
     {
-        var closed = new TaskCompletionSource();
         Exception? reported = null;
+        var closes = 0;
         var gate = new DeferredWindowClose(
             async () => { await Task.Yield(); throw new InvalidOperationException("disposal failed"); },
-            () => closed.TrySetResult(),
+            () => closes++,
             ex => reported = ex);
 
         Assert.True(gate.ShouldCancelClose());
-        await closed.Task.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+        await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.IsType<InvalidOperationException>(reported);
+        Assert.Equal(1, closes);
         Assert.False(gate.ShouldCancelClose());
     }
 
     [Fact]
-    public void SynchronousReleaseFailureDoesNotBlockClosing()
+    public async Task SynchronousReleaseFailureDoesNotBlockClosing()
     {
         Exception? reported = null;
+        var closes = 0;
         var gate = new DeferredWindowClose(
             () => throw new InvalidOperationException("disposal failed"),
-            () => { },
+            () => closes++,
             ex => reported = ex);
 
-        Assert.False(gate.ShouldCancelClose());
+        Assert.True(gate.ShouldCancelClose());
+        await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.NotNull(reported);
+        Assert.Equal(1, closes);
+    }
+
+    [Fact]
+    public async Task ForcedCloseBeforeReleaseSkipsReleaseAndClose()
+    {
+        var releases = 0;
+        var closes = 0;
+        var gate = new DeferredWindowClose(() => { releases++; return ValueTask.CompletedTask; }, () => closes++);
+
+        Assert.True(gate.ShouldCancelClose());
+        // Application shutdown ignores the cancellation and destroys the WebView immediately.
+        gate.MarkClosed();
+        await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+        Assert.Equal(0, releases);
+        Assert.Equal(0, closes);
+        Assert.False(gate.ShouldCancelClose());
     }
 
     [Fact]
     public async Task ForcedCloseDuringReleaseIsNotRepeated()
     {
+        var started = new TaskCompletionSource();
         var release = new TaskCompletionSource();
         var closes = 0;
-        var gate = new DeferredWindowClose(() => new ValueTask(release.Task), () => closes++);
+        var gate = new DeferredWindowClose(
+            () => { started.TrySetResult(); return new ValueTask(release.Task); },
+            () => closes++);
 
         Assert.True(gate.ShouldCancelClose());
-        // Application shutdown ignores the cancellation and closes the window anyway.
+        await started.Task.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         gate.MarkClosed();
         release.SetResult();
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await gate.Completion.WaitAsync(Timeout, TestContext.Current.CancellationToken);
         Assert.Equal(0, closes);
-        Assert.False(gate.ShouldCancelClose());
     }
 }
