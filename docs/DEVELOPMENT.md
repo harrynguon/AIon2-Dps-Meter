@@ -61,9 +61,11 @@ AionDpsMeter.LifecycleCheck guards the companion close crash fixed in b4740c5. C
 Run it after building, as in the setup block above (`dotnet run --project $lifecyclePath --no-build`); a run takes about 15 seconds. It prints one line per step. Exit codes:
 
 - 0: PASS.
-- 1: an unhandled exception (the stack is printed; the meter would have crashed), or a step that did not finish within 30 seconds.
+- 1: an unhandled exception escaped the application (the stack is printed; the meter would have crashed), or a step failed or did not finish within 30 seconds.
 - 2: no result within three minutes (hung UI thread).
+
+A crash on another thread ends the process with the runtime's own nonzero code. Treat any nonzero exit as a failure.
 
 With DeferredWindowClose.ShouldCancelClose forced to return false, it fails at the first close with the reported InvalidOperationException from Blazor IpcSender.
 
-The check never creates packet capture or the meter's own windows. A new temporary directory holds the companion store (registered with AddCompanionStore) and the WebView2 profile (WEBVIEW2_USER_DATA_FOLDER, set only inside the check process); it is removed afterwards, and player settings are never read or written. The page is driven through CoreWebView2 script execution, so no remote-debugging port is opened. Web assets come from the UI's development static web assets manifest, which the check's build copies as its own, so it serves this checkout's wwwroot and blazor.webview.js. It does not cover the integrated meter, capture, combat or the ◈ button.
+The check never creates packet capture or the meter's own windows. A new temporary directory holds the companion store (registered with AddCompanionStore) and the WebView2 profile (WEBVIEW2_USER_DATA_FOLDER, set only inside the check process). Player settings are never read or written. The directory is removed after a passing run. If a failure leaves a companion open, WebView2 keeps its profile and the check prints the leftover path (synthetic data only, safe to delete); a watchdog exit skips cleanup. The page is driven through CoreWebView2 script execution, so no remote-debugging port is opened. Web assets come from the UI's development static web assets manifest, which the check's build copies as its own, so it serves this checkout's wwwroot and blazor.webview.js. It does not cover the integrated meter, capture, combat or the ◈ button.

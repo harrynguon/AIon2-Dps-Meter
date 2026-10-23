@@ -78,7 +78,7 @@ public sealed class CompanionStoreTests : IDisposable
     [Fact]
     public void RegistrationDefersPathValidationUntilTheCompanionOpens()
     {
-        // A bad location must not stop the meter from building its services.
+        // A bad location must not stop the meter from building its services; only resolving the store fails.
         using var provider = new ServiceCollection().AddCompanionStore("data").BuildServiceProvider();
         Assert.Throws<ArgumentException>(() => provider.GetRequiredService<CompanionStore>());
     }

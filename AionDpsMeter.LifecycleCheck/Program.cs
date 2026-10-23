@@ -25,7 +25,8 @@ namespace AionDpsMeter.LifecycleCheck;
 /// check, as it would terminate the meter. Packet capture and the meter's own windows are never created, the
 /// companion store and WebView2 profile live in a scratch directory, and the page is driven through
 /// CoreWebView2 script execution, so no remote-debugging port is opened.
-/// Exit codes: 0 pass, 1 failure or unhandled exception, 2 watchdog timeout.
+/// Exit codes: 0 pass, 1 failed step or unhandled exception escaping the application, 2 watchdog timeout.
+/// A crash on another thread ends the process with the runtime's own nonzero code.
 /// </remarks>
 internal static class Program
 {
@@ -72,7 +73,7 @@ internal static class Program
         catch (Exception ex)
         {
             // Unhandled dispatcher exceptions escape Application.Run; in the meter they end the process.
-            Console.Error.WriteLine("FAIL: unhandled exception; the meter would have crashed.");
+            Console.Error.WriteLine("FAIL: unhandled exception escaped the application; the meter would have crashed.");
             Console.Error.WriteLine(ex);
             return 1;
         }
@@ -123,6 +124,14 @@ internal static class Program
                 Console.Error.WriteLine($"FAIL: {label}: {ex.Message}");
                 return false;
             }
+            catch (Exception ex)
+            {
+                // A step of the check itself threw (for example a WebView2 call). A meter-style crash is raised
+                // on the dispatcher by Blazor, never into this method, so it still escapes Application.Run.
+                Console.Error.WriteLine($"FAIL: {label}: check step error");
+                Console.Error.WriteLine(ex);
+                return false;
+            }
         }
         return true;
     }
@@ -147,12 +156,14 @@ internal static class Program
         return (window, await WithinStepLimit(initialized.Task, "WebView2 did not initialize"));
     }
 
+    // Awaits a step's result, turning a timeout into a labelled check failure.
     private static async Task<T> WithinStepLimit<T>(Task<T> task, string failure)
     {
         await WithinStepLimit((Task)task, failure);
         return await task;
     }
 
+    // Awaits a step, turning a timeout into a labelled check failure.
     private static async Task WithinStepLimit(Task task, string failure)
     {
         try { await task.WaitAsync(StepLimit); }
@@ -174,10 +185,12 @@ internal static class Program
         throw new CheckFailedException($"the companion did not render within {StepLimit.TotalSeconds} s");
     }
 
+    // Progress wording for a close step.
     private static string Describe(Ending ending) =>
         ending == Ending.CloseButton ? "its close button" : "WM_CLOSE (as Alt+F4 sends)";
 
-    // WebView2 child processes can hold the profile briefly after the host exits; cleanup is best effort.
+    // Best effort: WebView2 processes release the profile shortly after a clean shutdown, but keep it while a
+    // companion is still open after a crash. A leftover path is printed; a watchdog exit skips cleanup.
     private static void DeleteScratch(string scratch)
     {
         for (var attempt = 0; attempt < 10; attempt++)
@@ -195,9 +208,11 @@ internal static class Program
 
     private const uint WmClose = 0x0010;
 
+    // Queues a window message, so WM_CLOSE arrives on a fresh dispatcher turn as it does from Alt+F4.
     [DllImport("user32.dll", EntryPoint = "PostMessageW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool PostMessage(nint hWnd, uint msg, nint wParam, nint lParam);
 
+    // An expected way for a step to fail (timeout or wrong state), reported without a stack trace.
     private sealed class CheckFailedException(string message) : Exception(message);
 }

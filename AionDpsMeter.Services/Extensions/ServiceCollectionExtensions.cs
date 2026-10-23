@@ -33,7 +33,8 @@ namespace AionDpsMeter.Services.Extensions
             /// Registers the one companion store shared by every companion window. The meter passes
             /// CompanionStore.DefaultDirectory; checks pass a scratch directory so a player's saves are never touched.
             /// The store (and its absolute-path validation) is created when a companion first opens, so a bad
-            /// location affects only the companion, not meter startup.
+            /// location does not stop meter startup. Opening the companion then fails like any other component
+            /// activation error, which Blazor rethrows on the UI dispatcher.
             /// </summary>
             public IServiceCollection AddCompanionStore(string directory)
             {
